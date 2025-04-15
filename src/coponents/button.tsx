@@ -3,7 +3,7 @@ import React from 'react'
 
 const Button = ({ handleLogin, title }: { handleLogin: any, title: any }) => {
     return (
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
             className="bg-gold-500 py-3 rounded-xl"
             onPress={handleLogin}
         >

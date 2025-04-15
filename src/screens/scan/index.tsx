@@ -6,27 +6,55 @@ import NoCameraDeviceError from './NoCameraDeviceError';
 import Input from '../../coponents/input';
 import CustomCheckbox from '../../coponents/checkbox';
 import Button from '../../coponents/button';
+import AlertContainer from '../../coponents/alert';
+import { authorizedFetch } from '../../utility/authorisedFetch';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import OverlayLoader from '../../coponents/Loader';
 
 const QRScannerScreen: React.FC = () => {
-
+  const { hasPermission } = useCameraPermission()
+  const device = useCameraDevice('back') // <- Always call this
   type Item = {
-    phone_number: string;
+    phone_number: string | null;
     amount: string;
   }
   const [show, setShow] = useState(false)
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   const [vendor, setVendor] = useState("")
   const [item, setItem] = useState<Item>({
-    phone_number: "",
+    phone_number: null,
     amount: "",
-    // confirm_password: ""
-  })
-  const device = useCameraDevice('back')
-  const { hasPermission } = useCameraPermission()
 
+  })
+
+  const submitForm = async () => {
+    try {
+      setLoading(true)
+      const data = {
+        phone_number: item.phone_number,
+        amount: item.amount
+      };
+
+      const res = await authorizedFetch('https://api.marapesa.com/api/wallet/pay', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      setLoading(false)
+      setShow(false)
+      setItem({
+        phone_number: null,
+        amount: "",
+      })
+      console.log('Login response:', res);
+    } catch (err) {
+      setLoading(false)
+      setShow(false)
+      console.error('Login error:', err);
+    }
+  };
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'ean-13'],
     onCodeScanned: (codes) => {
@@ -35,13 +63,14 @@ const QRScannerScreen: React.FC = () => {
       let url: string | any = codes[0].value
       const lastSegment: any = url.split('/').pop();
       setVendor(lastSegment.replace(/-/g, ' '))
+
     }
   })
 
 
 
-  if (!hasPermission) return <PermissionsPage />
-  if (device == null) return <NoCameraDeviceError />
+  // if (!hasPermission) return <PermissionsPage />
+  // if (device == null) return <NoCameraDeviceError />
 
   const handleChange = (key: keyof Item, value: string) => {
     setItem(prev => ({
@@ -49,34 +78,7 @@ const QRScannerScreen: React.FC = () => {
       [key]: value
     }));
   };
-  const submit = async () => {
-    try {
-      if (!item.phone_number || !item.amount) {
-        setErrorMessage("Please fill out all fields.");
-        return;
-      }
-      setLoading(true); // Start loading
 
-      const response = await fetch('/wallet/pay', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(item),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
-
-      setShow(false)
-    } catch (error: any) {
-        setErrorMessage(error.message);
-    } finally {
-      setLoading(false); 
-    }
-  };
   useEffect(() => {
     if (errorMessage) {
       const timeout = setTimeout(() => {
@@ -90,6 +92,7 @@ const QRScannerScreen: React.FC = () => {
   return (
 
     <View className={`flex-1 relative items-center z-10 justify-center ${show ? "bg-black-200" : "bg-black-50"} `}>
+      {loading && <OverlayLoader />}
 
       <Camera
         style={{ width: 200, height: 200 }}
@@ -111,19 +114,20 @@ const QRScannerScreen: React.FC = () => {
             label="amount"
             placeholder="Amount"
             value={item.amount}
-            onChangeText={(text: string) => handleChange("phone_number", text)}
+            onChangeText={(text: string) => handleChange("amount", text)}
             keyboard="numeric"
           />
           <CustomCheckbox title='Use a different Number' checked={checked} setChecked={() => setChecked(!checked)} />
           {errorMessage !== '' && (
-            <View className="bg-red-500 p-2 rounded-md mb-4">
-              <Text className="text-white text-center">{errorMessage}</Text>
-            </View>
+            <AlertContainer msg={errorMessage} state="error" />
           )}
-          <Button title="Pay" handleLogin={() => submit()} />
+          <Button title="Pay" handleLogin={() => submitForm()} />
           <Text className='text-red-500 text-center capitalize mt-10'>{vendor}</Text>
         </View>
       </View>}
+      {/* <View className=" absolute  bottom-[10%]  items-center flex h-10  w-1/2 py-2">
+        <Text className='text-gold-300'>Error</Text>
+      </View> */}
       <Image
         className=" absolute object-contain  self-center z-10 size-48 rounded-md p-4"
         source={require('./../../assets/logo.png')}

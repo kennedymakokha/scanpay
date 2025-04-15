@@ -1,39 +1,39 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-
-
+import React, { useEffect } from 'react';
+import { PermissionsAndroid } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { RootStack } from './src/navigation/rootStack';
 import "./global.css"
-import Login from './src/screens/auth/login';
-import Scan from './src/screens/scan';
-
+const requestCameraPermission = async () => {
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      {
+        title: 'Camera Permission',
+        message: 'This app needs access to your camera.',
+        buttonPositive: 'OK',
+        buttonNegative: 'Cancel',
+      }
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log('Camera permission granted');
+    } else {
+      console.log('Camera permission denied');
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+};
 
 function App(): React.JSX.Element {
-
+  useEffect(() => {
+    requestCameraPermission();
+  }, []);
 
   return (
-    <View className=' flex-1' >
-      <View className="flex-1">
-        <Scan />
-      </View>
-    </View>
+    <NavigationContainer>
+      <RootStack />
+    </NavigationContainer>
   );
 }
-
-
 
 export default App;
