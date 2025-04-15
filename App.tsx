@@ -27,7 +27,6 @@ function App(): React.JSX.Element {
 
   return (
     <View className=' flex-1' >
-
       <View className="flex-1">
         <Scan />
       </View>
