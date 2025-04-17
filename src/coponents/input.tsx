@@ -1,7 +1,7 @@
 import { View, Text, TextInput } from 'react-native'
 import React from 'react'
 import Icon from 'react-native-vector-icons/Entypo'
-const Input = ({ placeholder, value, onChangeText, keyboard, label, hide, setHide }: { hide?: boolean, setHide?: any, placeholder: string, value: string, onChangeText: any, keyboard?: string | any, label?: string }) => {
+const Input = ({ placeholder, value, onChangeText, keyboard, label, hide, setHide }: { hide?: boolean, setHide?: any, placeholder: string, value: string | any, onChangeText: any, keyboard?: string | any, label?: string }) => {
     return (
 
         <View className="flex w-full  h-20  mb-4 rounded-md bg-black-100 justify-center">
