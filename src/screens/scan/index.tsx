@@ -10,16 +10,26 @@ import AlertContainer from '../../coponents/alert';
 import { authorizedFetch } from '../../utility/authorisedFetch';
 import OverlayLoader from '../../coponents/Loader';
 import { Item } from '../../../types';
-
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
+import ScanOverlay from './components/animatedOverlay';
 const QRScannerScreen: React.FC = () => {
-  const [cam, setCam] = useState<any>("back")
 
-  const { hasPermission } = useCameraPermission()
-  const device = useCameraDevice(cam)
+
+  // const { hasPermission } = useCameraPermission()
+  // const device = useCameraDevice("back")
+  const devices = Camera.getAvailableCameraDevices()
+  console.log(devices)
+  const device = devices.filter(d => d.position === 'back')[0] || null
   const [show, setShow] = useState(false);
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [codeError, setCodeError] = useState(false);
   const [vendor, setVendor] = useState('');
   const [item, setItem] = useState<Item>({
     phone_number: null,
@@ -31,12 +41,17 @@ const QRScannerScreen: React.FC = () => {
   const submitForm = async () => {
     try {
       setLoading(true);
+      if (item.amount === "") {
+        setErrorMessage("Kindly enter amount")
+        setLoading(false)
+        return
+      }
       const data = {
         phone_number: item.phone_number,
         amount: item.amount,
       };
 
-      const res = await authorizedFetch('https://api.marapesa.com/api/wallet/pay', {
+      const res = await authorizedFetch('http://185.113.249.137:5000/api/wallet/pay', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -51,19 +66,35 @@ const QRScannerScreen: React.FC = () => {
       console.error('Payment error:', err);
     }
   };
-
+  function getDomain(url: any) {
+    const match = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/]+)/i);
+    return match ? match[1] : null;
+  }
   const codeScanner = useCodeScanner({
+
     codeTypes: ['qr', 'ean-13'],
     onCodeScanned: (codes) => {
+
       if (isScanning.current) return; // 👈 prevent re-trigger
-      const url = codes?.[0]?.value;
+      const url: any = codes?.[0]?.value;
+
+      const domain = getDomain(`${url}`);
       if (!url) return;
+
       isScanning.current = true;
-      Vibration.vibrate(500);
-      setShow(true);
+      setTimeout(() => {
+        if (domain !== "marapesa.com") {
+          setCodeError(true)
+          setErrorMessage("wrong QR")
+          Vibration.vibrate(500);
+          return
+        }
+        Vibration.vibrate(500);
+        setShow(true);
+      }, 2000);
       const lastSegment = url.split('/').pop();
       setVendor(lastSegment?.replace(/-/g, ' ') ?? '');
-
+      setCodeError(false)
       // Optional cooldown before allowing next scan
       setTimeout(() => {
         isScanning.current = false;
@@ -87,7 +118,7 @@ const QRScannerScreen: React.FC = () => {
   useEffect(() => {
     (async () => {
       let status = await Camera.getCameraPermissionStatus();
-      console.log(status)
+
       if (status !== 'granted') {
         status = await Camera.requestCameraPermission();
       }
@@ -99,18 +130,33 @@ const QRScannerScreen: React.FC = () => {
     })();
   }, []);
 
-  if (hasPermission === false) {
-    return <PermissionsPage />;
-  }
+  // if (hasPermission === false) {
+  //   return <PermissionsPage />;
+  // }
 
   if (!device) {
     return <NoCameraDeviceError />;
   }
+  const translateY = useSharedValue(0);
 
+  useEffect(() => {
+    translateY.value = withRepeat(
+      withTiming(200 * 0.4, { duration: 2000 }),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedLineStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
   return (
     <View className={`flex-1 relative items-center justify-center ${show ? 'bg-black-200' : 'bg-black-50'}`}>
       {loading && <OverlayLoader />}
-
+      {codeError && errorMessage !== "" && <AlertContainer msg={errorMessage} state="error" />}
+      <View className="w-1/2 self-center  ">
+        {/* <ScanOverlay /> */}
+      </View>
       <Camera
         style={{ width: 200, height: 200 }}
         device={device}
@@ -121,6 +167,7 @@ const QRScannerScreen: React.FC = () => {
       {show && (
         <View className="absolute z-20 w-3/4 self-center bg-black-50 rounded-md p-4">
           <View className="flex-1 w-full py-10">
+          <AlertContainer msg={errorMessage} state="error" />
             {checked && (
               <Input
                 label="Phone Number"

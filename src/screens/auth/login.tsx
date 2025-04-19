@@ -36,10 +36,10 @@ export default function LoginScreen() {
     const [step, setStep] = useState(1);
     const [user, setUser] = useState({});
     const [item, setItem] = useState<Item>({
-        phone_number: "",
-        password: "",
+        phone_number: "0704977330",
+        password: "makokha1",
         confirm_password: "",
-        username: "suggeted",
+        username: "Champion intel",
         code: ""
     })
     type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -72,7 +72,7 @@ export default function LoginScreen() {
                 return;
             }
 
-            const endpoint = islogin ? "https://api.marapesa.com/api/auth/login" : "https://api.marapesa.com/api/auth/register";
+            const endpoint = islogin ? "http://185.113.249.137:5000/api/auth/login" : "http://185.113.249.137:5000/api/auth/register";
 
             const response = await fetch(endpoint, {
                 method: "POST",
@@ -92,25 +92,29 @@ export default function LoginScreen() {
                     }
                 }
                 setMsg({ msg: `${islogin ? "Login successful! Redirecting..." : "Registration successful! Please verify your account."}`, state: "success" });
-                setIsloading(false)
-                setTimeout(() => {
-                    if (islogin) {
-                        navigation.navigate("home");
-                    } else {
+                if (islogin) {
+                    navigation.navigate("home");
+                    setIsloading(false)
+                } else {
+                    setTimeout(() => {
                         setStep(2);
                         setIslogin(false);
-
-                    }
-                }, 2000);
+                        setIsloading(false)
+                    },
+                        2000);
+                }
 
             } else {
                 if (data === "Kindly activate your account to continue") {
                     setStep(2);
                     setIslogin(false);
+                    setIsloading(false)
+                } else {
+                    setMsg({ msg: data.message || data, state: "" });
+                    setIsloading(false)
+                    setIsloading(false)
                 }
 
-                setMsg({ msg: data.message || data, state: "" });
-                setIsloading(false)
             }
 
         } catch (error) {
@@ -132,7 +136,7 @@ export default function LoginScreen() {
                 return;
             }
             item.code = item.otp
-            const response = await fetch("https://api.marapesa.com/api/auth/activate-user", {
+            const response = await fetch("http://185.113.249.137:5000/api/auth/activate-user", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

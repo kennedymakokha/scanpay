@@ -3,12 +3,15 @@ export type RootStackParamList = {
     login: undefined;
     profile: { userId: string };
     transactions: undefined
+    AdminDashboard: undefined
+    Home: undefined
     // Add other routes here
 };
 
 export type ItemData = {
-    id: string;
-    title: string;
+    _id: string;
+    amount: string;
+    ResponseCode?: any
 };
 export type ItemProps = {
     item: ItemData;
@@ -20,4 +23,11 @@ export type ItemProps = {
 export type Item = {
     phone_number: string | null;
     amount: string;
+};
+export type Transaction = {
+    id?: string;
+    type?: 'Sent' | 'Received';
+    amount: number;
+    party?: string;
+    date?: string;
 };

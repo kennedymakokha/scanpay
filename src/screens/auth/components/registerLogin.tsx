@@ -8,7 +8,7 @@ const RegisterLogin = ({ item, handleChange, handleLogin, setIslogin, hide, setH
         <View className="flex-1 w-full">
             <Input
                 label="Phone Number"
-                placeholder="Email"
+                placeholder="Phone nunber"
                 value={item.phone_number}
                 onChangeText={(text: string) => handleChange("phone_number", text)}
                 keyboard="numeric"

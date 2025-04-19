@@ -1,8 +1,14 @@
 import React, { useEffect } from 'react';
 import { PermissionsAndroid } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { RootStack } from './src/navigation/rootStack';
 import "./global.css"
+import './gesture-handler';
+import { authorizedFetch } from './src/utility/authorisedFetch';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from './types';
+import { UserProvider } from './contexts/userContext';
 const requestCameraPermission = async () => {
   try {
     const granted = await PermissionsAndroid.request(
@@ -25,14 +31,34 @@ const requestCameraPermission = async () => {
 };
 
 function App(): React.JSX.Element {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   useEffect(() => {
     requestCameraPermission();
   }, []);
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await authorizedFetch('http://185.113.249.137:5000/api/auth');
 
+        if (res?.userId) {
+          await AsyncStorage.setItem("userId", res?.userId);
+          navigation.navigate('home');
+        } else {
+          navigation.navigate('login');
+        }
+      } catch (e) {
+        console.error(e);
+        navigation.navigate('login');
+      }
+    };
+    checkAuth();
+  }, []);
   return (
-    <NavigationContainer>
+    <UserProvider>
       <RootStack />
-    </NavigationContainer>
+    </UserProvider>
+
   );
 }
 
