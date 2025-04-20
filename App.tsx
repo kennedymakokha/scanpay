@@ -9,6 +9,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './types';
 import { UserProvider } from './contexts/userContext';
+import { Provider } from 'react-redux';
+import { persistor, store } from './store';
+
+import { PersistGate } from 'redux-persist/integration/react';
 const requestCameraPermission = async () => {
   try {
     const granted = await PermissionsAndroid.request(
@@ -54,11 +58,15 @@ function App(): React.JSX.Element {
     };
     checkAuth();
   }, []);
+ 
   return (
-    <UserProvider>
-      <RootStack />
-    </UserProvider>
-
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <UserProvider>
+          <RootStack />
+        </UserProvider>
+      </PersistGate>
+    </Provider>
   );
 }
 

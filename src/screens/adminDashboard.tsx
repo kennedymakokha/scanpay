@@ -1,8 +1,11 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
+import { useGetSessionQuery } from '../../services/authApi';
 
 
 const AdminDashboard = () => {
+   const { data: profile, isLoading } = useGetSessionQuery({});
+      console.log("ProfileF",profile)
   return (
     <ScrollView className="flex-1 bg-black-50 px-4 pt-[80px]">
 

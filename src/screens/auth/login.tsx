@@ -1,17 +1,15 @@
 
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Image } from "react-native";
-import Input from "../../coponents/input";
-import Button from "../../coponents/button";
+import { View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../types";
-
-import { Alert } from 'react-native';
+import { RootStackParamList, User } from "../../../types";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RegisterLogin, { OtpView } from "./components/registerLogin";
 import OverlayLoader from "../../coponents/Loader";
 import AlertContainer from "../../coponents/alert";
+
+import { useLoginMutation, useSignupMutation, useActivateMutation } from "../../../services/authApi";
 
 
 
@@ -30,12 +28,12 @@ export default function LoginScreen() {
     const [hide, setHide] = useState(true)
     const [hideconfirm, setHideConfirm] = useState(true)
     const [islogin, setIslogin] = useState(true)
-    const [isLoading, setIsloading] = useState(false)
+
     const [msg, setMsg] = useState({ msg: "", state: "" });
 
     const [step, setStep] = useState(1);
     const [user, setUser] = useState({});
-    const [item, setItem] = useState<Item>({
+    const [item, setItem] = useState<User>({
         phone_number: "0704977330",
         password: "makokha1",
         confirm_password: "",
@@ -44,7 +42,10 @@ export default function LoginScreen() {
     })
     type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
     const navigation = useNavigation<NavigationProp>();
-
+    // const { login, loading, error, isAuthenticated } = useAuth();
+    const [login, { isLoading, error }] = useLoginMutation();
+    const [register, { isLoading: registrationLoading }] = useSignupMutation();
+    const [activate, { isLoading: activationLoading }] = useActivateMutation();
     const handleChange = (key: keyof Item, value: string) => {
         setMsg({ msg: "", state: "" });
 
@@ -55,34 +56,21 @@ export default function LoginScreen() {
     };
     const handleSubmit = async (e?: any) => {
         try {
-            setIsloading(true)
+
             if (e?.preventDefault) e.preventDefault();
 
             setMsg({ msg: "", state: "" });
 
             if (!item.phone_number || !item.password) {
                 setMsg({ msg: "Both fields are required", state: "error" });
-                setIsloading(false)
                 return;
             }
 
             if (!islogin && item.password !== item.confirm_password) {
                 setMsg({ msg: "Passwords do not match", state: "error" });
-                setIsloading(false)
                 return;
             }
-
-            const endpoint = islogin ? "http://185.113.249.137:5000/api/auth/login" : "http://185.113.249.137:5000/api/auth/register";
-
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(item)
-            });
-
-            const data = await response.json();
+            const data = islogin ? await login(item).unwrap() : await register(item).unwrap();
 
             if (data.ok === true) {
                 if (islogin) {
@@ -94,12 +82,11 @@ export default function LoginScreen() {
                 setMsg({ msg: `${islogin ? "Login successful! Redirecting..." : "Registration successful! Please verify your account."}`, state: "success" });
                 if (islogin) {
                     navigation.navigate("home");
-                    setIsloading(false)
+
                 } else {
                     setTimeout(() => {
                         setStep(2);
                         setIslogin(false);
-                        setIsloading(false)
                     },
                         2000);
                 }
@@ -108,70 +95,57 @@ export default function LoginScreen() {
                 if (data === "Kindly activate your account to continue") {
                     setStep(2);
                     setIslogin(false);
-                    setIsloading(false)
                 } else {
                     setMsg({ msg: data.message || data, state: "" });
-                    setIsloading(false)
-                    setIsloading(false)
                 }
-
             }
-
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            setMsg({ msg: "An error occurred. Please try again.", state: "error" });
-            setIsloading(false)
+            setMsg({ msg: error.message || error.data || "Error Occured try again 😧😧😧 !!!", state: "error" });
+
         } finally {
-            setIsloading(false)
+
         }
     };
+
     const handleVerification = async (e: React.FormEvent) => {
+
         try {
-            setIsloading(true)
             if (e?.preventDefault) e.preventDefault();
             setMsg({ msg: "", state: "" });
             if (!item.otp) {
                 setMsg({ msg: "Enter the OTP sent on", state: "error" });
-                setIsloading(false)
                 return;
             }
             item.code = item.otp
-            const response = await fetch("http://185.113.249.137:5000/api/auth/activate-user", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(item)
-            });
-
-            const data = await response.json();
+            const data = await activate(item).unwrap();
             if (data.ok === true) {
-                setMsg({ msg: "Account activated successfully! Redirecting...", state: "success" });
+                setMsg({ msg: "Account activated successfully! Now Login...", state: "success" });
                 setTimeout(() => {
                     setStep(1)
                     setIslogin(true)
-                    setIsloading(false)
+                    setMsg({ msg: "", state: "" });
+
                 }, 2000); // Delay to show success message
             } else {
+
                 setMsg({ msg: data.message || data, state: "error" });
-                setIsloading(false)
+
             }
 
-        } catch (error) {
-            console.log(error)
-            setMsg({ msg: "Enter the OTP sent on ", state: "error" });
-            setIsloading(false)
-
+        } catch (error: any) {
+            setMsg({ msg: error.message || error.data || "Error Occured try again 😧😧😧 !!!", state: "error" });;
         } finally {
-            setIsloading(false)
+
         }
     };
+  
     return (
         <KeyboardAvoidingView className=""
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ flex: 1 }}
         >
-            {isLoading && <OverlayLoader />}
+            {isLoading || activationLoading || registrationLoading && <OverlayLoader />}
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView
                     contentContainerStyle={{ flexGrow: 1 }}

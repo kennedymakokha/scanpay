@@ -24,6 +24,14 @@ export type Item = {
     phone_number: string | null;
     amount: string;
 };
+export type User = {
+    phone_number?: string,
+    password?: string,
+    confirm_password?: string,
+    username?: string,
+    otp?: string
+    code?: string
+}
 export type Transaction = {
     id?: string;
     type?: 'Sent' | 'Received';
