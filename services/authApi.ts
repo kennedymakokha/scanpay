@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { User } from '../types';
 
-const baseUrl = 'https://api.marapesa.com/api';
+const baseUrl = 'http://scanapi.marapesa.com/api';
 
 export const authApi = createApi({
   reducerPath: 'authApi',

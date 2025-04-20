@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useGetSessionQuery } from '../../services/authApi';
+import { useSelector } from 'react-redux';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
+import { useNavigation } from '@react-navigation/native';
 
 
 const AdminDashboard = () => {
-   const { data: profile, isLoading } = useGetSessionQuery({});
-      console.log("ProfileF",profile)
+  const { user } = useSelector((state: any) => state.auth)
+  type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+  const navigation = useNavigation<NavigationProp>();
+  useEffect(() => {
+    if (!user) {
+      navigation.replace("login")
+    }
+  }, [])
+
   return (
     <ScrollView className="flex-1 bg-black-50 px-4 pt-[80px]">
 

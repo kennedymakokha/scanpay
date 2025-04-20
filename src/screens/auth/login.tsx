@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ScrollView, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -8,12 +8,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RegisterLogin, { OtpView } from "./components/registerLogin";
 import OverlayLoader from "../../coponents/Loader";
 import AlertContainer from "../../coponents/alert";
-
 import { useLoginMutation, useSignupMutation, useActivateMutation } from "../../../services/authApi";
-
-
-
-
+import { useDispatch, useSelector } from "react-redux";
+import { setCredentials } from "../../features/auth/authSlice";
 
 export default function LoginScreen() {
 
@@ -28,13 +25,11 @@ export default function LoginScreen() {
     const [hide, setHide] = useState(true)
     const [hideconfirm, setHideConfirm] = useState(true)
     const [islogin, setIslogin] = useState(true)
-
     const [msg, setMsg] = useState({ msg: "", state: "" });
-
     const [step, setStep] = useState(1);
-    const [user, setUser] = useState({});
+    const { user } = useSelector((state: any) => state.auth)
     const [item, setItem] = useState<User>({
-        phone_number: "0704977330",
+        phone_number: "0720141534",
         password: "makokha1",
         confirm_password: "",
         username: "Champion intel",
@@ -42,10 +37,10 @@ export default function LoginScreen() {
     })
     type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
     const navigation = useNavigation<NavigationProp>();
-    // const { login, loading, error, isAuthenticated } = useAuth();
     const [login, { isLoading, error }] = useLoginMutation();
     const [register, { isLoading: registrationLoading }] = useSignupMutation();
     const [activate, { isLoading: activationLoading }] = useActivateMutation();
+    const dispatch = useDispatch()
     const handleChange = (key: keyof Item, value: string) => {
         setMsg({ msg: "", state: "" });
 
@@ -74,6 +69,7 @@ export default function LoginScreen() {
 
             if (data.ok === true) {
                 if (islogin) {
+                    dispatch(setCredentials({ ...data }))
                     await AsyncStorage.setItem("accessToken", data.token);
                     if (data?.exp) {
                         await AsyncStorage.setItem("tokenExpiry", data.exp.toString());
@@ -139,7 +135,12 @@ export default function LoginScreen() {
 
         }
     };
-  
+    useEffect(() => {
+        if (user) {
+            navigation.replace("home")
+        }
+    }, [])
+
     return (
         <KeyboardAvoidingView className=""
             behavior={Platform.OS === "ios" ? "padding" : "height"}

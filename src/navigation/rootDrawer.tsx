@@ -13,12 +13,11 @@ import { authorizedFetch } from '../utility/authorisedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserDashboard from '../screens/userDashboard';
 import { useUser } from '../../contexts/userContext';
+import { useSelector } from 'react-redux';
 const Drawer = createDrawerNavigator();
 
 export function RootDrawer() {
-    const { user, setUser, logout } = useUser();
-
-
+    const { user } = useSelector((state: any) => state.auth)
     return (
         <Drawer.Navigator
             drawerContent={(props) => <CustomDrawer {...props} />}

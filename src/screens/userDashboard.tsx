@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity } from 'react-native';
+import { useSelector } from 'react-redux';
 
 type Transaction = {
   id: string;
@@ -17,36 +18,20 @@ const transactions: Transaction[] = [
 
 const UserDashboard = () => {
   const [balance] = useState(150.25);
-  const user = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-  };
-
+  const { user } = useSelector((state: any) => state.auth)
+  user.avatar = 'https://i.pravatar.cc/150?img=3'
   return (
     <View className="flex-1 bg-black-50 px-4 pt-[80px]">
-      {/* User Info */}
       <View className="flex-row items-center mb-6">
         <Image
-          source={{ uri: user.avatar }}
+          source={{ uri: user?.avatar }}
           className="w-20 h-20 rounded-md mr-4"
         />
         <View>
-          <Text className="text-lg font-bold text-white">{user.name}</Text>
-          <Text className="text-sm text-gray-400">{user.email}</Text>
+          <Text className="text-lg font-bold text-white">{user.username}</Text>
+          <Text className="text-sm text-gray-400">{user.phone_number}</Text>
         </View>
       </View>
-
-      {/* Wallet Summary */}
-      <View className="bg-gray-800 rounded-xl p-4 mb-6">
-        <Text className="text-gray-300">Wallet Balance</Text>
-        <Text className="text-3xl font-bold text-green-400 mt-1">
-          ${balance.toFixed(2)}
-        </Text>
-      </View>
-
-
-      {/* Recent Transactions */}
       <Text className="text-xl font-semibold text-white mb-3">
         Recent Transactions
       </Text>

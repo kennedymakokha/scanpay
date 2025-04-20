@@ -6,8 +6,11 @@ import Icon1 from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { useUser } from '../../contexts/userContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../features/auth/authSlice';
 const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => {
-  const { user, setUser, logout } = useUser();
+  const { user } = useSelector((state: any) => state.auth)
+  const dispatch = useDispatch()
   const Adminroutes = [
     {
       title: "My Wallet",
@@ -31,8 +34,15 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
       icon: "data-matrix-scan"
     }
   ]
-
-  console.log(user)
+  let data = Userroutes
+  if (user?.role === "admin") {
+    data = Adminroutes
+  }
+  const logoutUser = async () => {
+    await dispatch(logout())
+    await AsyncStorage.clear();
+    navigation.navigate("login"); logout
+  }
   return (
     <View className="flex-1 bg-black py-16 px-5">
       {/* Header */}
@@ -41,7 +51,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
           source={require('../assets/logo.png')}
           className="w-20 h-20 rounded-full mb-2"
         />
-        <Text className="text-white text-lg">{user?.username}</Text>
+        <Text className="text-white text-lg">{user?.phone_number}</Text>
       </View>
 
       {/* Links */}
@@ -52,7 +62,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
         <Icon name="home-outline" size={20} color="#fff" />
         <Text className="text-white text-base ml-3">Home</Text>
       </TouchableOpacity>
-      {Adminroutes.map(index => (<TouchableOpacity key={index.title}
+      {data.map(index => (<TouchableOpacity key={index.title}
         className="flex-row items-center my-4"
         onPress={() => navigation.navigate(`${index.path}`)}
       >
@@ -71,7 +81,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
 
       {/* Footer */}
       <View className="mt-auto border-t border-gold-700 pt-5">
-        <TouchableOpacity activeOpacity={1} onPress={async () => { await AsyncStorage.clear(); navigation.navigate("login"); logout }}>
+        <TouchableOpacity activeOpacity={1} onPress={async () => logoutUser()}>
           <Text className="text-gold-500 uppercase text-center text-base">Logout</Text>
         </TouchableOpacity>
       </View>

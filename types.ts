@@ -23,6 +23,7 @@ export type ItemProps = {
 export type Item = {
     phone_number: string | null;
     amount: string;
+    to: string
 };
 export type User = {
     phone_number?: string,

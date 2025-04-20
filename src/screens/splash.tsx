@@ -9,16 +9,16 @@ import OverlayLoader from '../coponents/Loader';
 
 import { useUser } from '../../contexts/userContext';
 import { useGetSessionQuery } from '../../services/authApi';
+import { useSelector } from 'react-redux';
 
 
 const SplashScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { user, setUser, logout } = useUser();
-    const { data: profile, isLoading } = useGetSessionQuery({});
+    const { user } = useSelector((state: any) => state.auth)
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                if (profile) {
+                if (user) {
                     navigation.replace('home');
                 } else {
                     navigation.replace('login');
@@ -32,7 +32,7 @@ const SplashScreen = () => {
     }, []);
     return (
         <>
-            {isLoading && <OverlayLoader />}
+            <OverlayLoader />
         </>
     );
 };

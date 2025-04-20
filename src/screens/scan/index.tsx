@@ -34,6 +34,7 @@ const QRScannerScreen: React.FC = () => {
   const [item, setItem] = useState<Item>({
     phone_number: null,
     amount: '',
+    to: "",
   });
 
   const isScanning = useRef(false); // 👈 prevent duplicate scans
@@ -49,16 +50,16 @@ const QRScannerScreen: React.FC = () => {
       const data = {
         phone_number: item.phone_number,
         amount: item.amount,
+        to: vendor
       };
-
-      const res = await authorizedFetch('http://185.113.249.137:5000/api/wallet/pay', {
+      const res = await authorizedFetch('http://scanapi.marapesa.com/api/wallet/pay', {
         method: 'POST',
         body: JSON.stringify(data),
       });
 
       setLoading(false);
       setShow(false);
-      setItem({ phone_number: null, amount: '' });
+      setItem({ phone_number: null, amount: '', to: '' });
       console.log('Payment response:', res);
     } catch (err) {
       setLoading(false);
@@ -167,7 +168,7 @@ const QRScannerScreen: React.FC = () => {
       {show && (
         <View className="absolute z-20 w-3/4 self-center bg-black-50 rounded-md p-4">
           <View className="flex-1 w-full py-10">
-          <AlertContainer msg={errorMessage} state="error" />
+            <AlertContainer msg={errorMessage} state="error" />
             {checked && (
               <Input
                 label="Phone Number"
@@ -197,7 +198,6 @@ const QRScannerScreen: React.FC = () => {
         source={require('./../../assets/logo.png')}
         resizeMode="cover"
       />
-
       {!show && (
         <View className="absolute bottom-10 self-center bg-black-50 rounded-md p-4">
           <Text className="font-bold text-md text-white">Scan a QR code</Text>
