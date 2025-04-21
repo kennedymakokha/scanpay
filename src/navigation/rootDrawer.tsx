@@ -2,7 +2,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import QRScannerScreen from '../screens/scan';
 import CustomDrawer from './customdrawer';
 import Transactions from '../screens/scan/transactions';
-import { RootStack } from './rootStack';
+import { AdminStack, ClientStack, RootStack, SuperAdminStack } from './rootStack';
 import AdminDashboard from '../screens/adminDashboard';
 import ProfileScreen from '../screens/profileScreen';
 import WalletView from '../screens/wallet';
@@ -51,6 +51,7 @@ export function RootDrawer() {
             <Drawer.Screen name="Home"
                 options={({ navigation }) => ({
                     title: "Dashboard",
+                    headerShown: false,
                     headerRight: () => (
                         <>
                             {user?.role === "client" &&
@@ -64,10 +65,10 @@ export function RootDrawer() {
                         </>
                     ),
                 })}
-                component={user?.role === "client" ? UserDashboard : AdminDashboard} />
-            <Drawer.Screen name="transactions" component={Transactions} />
+                component={user?.role === "client" ? ClientStack : user?.role === "superAdmin" ? SuperAdminStack : AdminStack} />
+
             <Drawer.Screen name="Profile" component={ProfileScreen} />
-            <Drawer.Screen name="Wallet" component={WalletView} />
+
             <Drawer.Screen
                 options={({ navigation }) => ({
                     title: "Scan To Pay",

@@ -28,9 +28,9 @@ export default function LoginScreen() {
     const [msg, setMsg] = useState({ msg: "", state: "" });
     const [step, setStep] = useState(1);
     const { user } = useSelector((state: any) => state.auth)
-    const [item, setItem] = useState<User>({
-        phone_number: "0720141534",
-        password: "makokha1",
+    const [item, setItem] = useState<any>({
+        phone_number: "0700000000",
+        password: "admin123",
         confirm_password: "",
         username: "Champion intel",
         code: ""
@@ -43,8 +43,7 @@ export default function LoginScreen() {
     const dispatch = useDispatch()
     const handleChange = (key: keyof Item, value: string) => {
         setMsg({ msg: "", state: "" });
-
-        setItem(prev => ({
+        setItem((prev: any) => ({
             ...prev,
             [key]: value
         }));

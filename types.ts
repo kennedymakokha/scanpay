@@ -5,6 +5,8 @@ export type RootStackParamList = {
     transactions: undefined
     AdminDashboard: undefined
     Home: undefined
+    businesses: undefined
+    vendor: undefined
     // Add other routes here
 };
 
@@ -26,12 +28,20 @@ export type Item = {
     to: string
 };
 export type User = {
+    id?: any
+    confirm_password?: any
+    vendorName?: string;
+    fullname?: string
+    role: "active" | "inactive";
+    ID_No: string
+    business?: any;
     phone_number?: string,
     password?: string,
-    confirm_password?: string,
     username?: string,
     otp?: string
     code?: string
+    lat:number
+    lng:number
 }
 export type Transaction = {
     id?: string;

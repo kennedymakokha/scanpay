@@ -3,18 +3,19 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Icon1 from 'react-native-vector-icons/MaterialCommunityIcons';
-
-import { useUser } from '../../contexts/userContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../features/auth/authSlice';
+import { useTheme } from '../../contexts/themeContext';
 const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => {
   const { user } = useSelector((state: any) => state.auth)
+  const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch()
   const Adminroutes = [
     {
       title: "My Wallet",
       path: "Wallet",
+      nested: true,
       icon: "wallet-sharp"
     },
     {
@@ -26,17 +27,46 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
     {
       title: "My Transactions",
       path: "transactions",
+      nested: true,
       icon: "swap-horizontal-outline"
     },
     {
       title: "My Scan-points",
       path: "transactions",
+      nested: true,
       icon: "data-matrix-scan"
     }
   ]
-  let data = Userroutes
+  const superAdminroutes = [
+    {
+      title: "Business Categories",
+      path: "businesses",
+      nested: true,
+      icon: "swap-horizontal-outline"
+    },
+    {
+      title: "clients",
+      path: "createbusiness",
+      nested: true,
+      icon: "users-outline"
+    }
+  ]
+  const salesAdminroutes = [
+    {
+      title: "My Clients",
+      path: "businesses",
+      nested: true,
+      icon: "users-outline"
+    },
+  ]
+
+  let data: any = Userroutes
   if (user?.role === "admin") {
     data = Adminroutes
+  } else if (user?.role === "superAdmin") {
+    data = superAdminroutes
+  } else {
+    data = salesAdminroutes
   }
   const logoutUser = async () => {
     await dispatch(logout())
@@ -62,9 +92,11 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
         <Icon name="home-outline" size={20} color="#fff" />
         <Text className="text-white text-base ml-3">Home</Text>
       </TouchableOpacity>
-      {data.map(index => (<TouchableOpacity key={index.title}
+      {data.map((index: any) => (<TouchableOpacity key={index.title}
         className="flex-row items-center my-4"
-        onPress={() => navigation.navigate(`${index.path}`)}
+        onPress={
+          index.nested ? () => navigation.navigate('Home', { screen: `${index.path}` }) :
+            () => navigation.navigate(`${index.path}`)}
       >
         {index.title === "My Scan-points" || index.title === "Scan" ? <Icon1 name={index.icon} size={20} color="#fff" /> : <Icon name={index.icon} size={20} color="#fff" />}
         <Text className="text-white text-base ml-3">{index.title}</Text>
@@ -81,6 +113,11 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
 
       {/* Footer */}
       <View className="mt-auto border-t border-gold-700 pt-5">
+        <TouchableOpacity onPress={toggleTheme}>
+          <Text className="text-blue-500 dark:text-blue-400">
+            {theme === 'dark' ? '🌞 Light' : '🌙 Dark'}
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={async () => logoutUser()}>
           <Text className="text-gold-500 uppercase text-center text-base">Logout</Text>
         </TouchableOpacity>

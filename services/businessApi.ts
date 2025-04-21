@@ -17,43 +17,41 @@ export const authApi = createApi({
     },
   }),
   endpoints: builder => ({
-    signup: builder.mutation({
+    registerbusiness: builder.mutation({
       query: (body: User) => ({
-        url: '/auth/register',
+        url: '/business',
         method: 'POST',
         body,
       }),
     }),
-    activate: builder.mutation({
+    getbusiness: builder.query({
+      query: () => '/business',
+    }),
+    updatebusiness: builder.mutation({
       query: (body: User) => ({
-        url: '/auth/activate-user',
-        method: 'POST',
+        url: `/business/${body.id}`,
+        method: 'put',
         body,
       }),
     }),
-    login: builder.mutation({
+    deletebusiness: builder.mutation({
       query: (body: User) => ({
-        url: '/auth/login',
-        method: 'POST',
-        body,
+        url: `/business/${body.id}`,
+        method: 'delete',
+
       }),
     }),
-    getSession: builder.query({
-      query: () => '/auth',
+    getonebusiness: builder.query({
+      query: (id) => `/business/${id}`,
     }),
-    logout: builder.mutation({
-      query: () => ({
-        url: '/auth/logout',
-        method: 'POST',
-      }),
-    }),
+
   }),
 });
 
 export const {
-  useActivateMutation,
-  useSignupMutation,
-  useLoginMutation,
-  useGetSessionQuery,
-  useLogoutMutation,
+  useDeletebusinessMutation,
+  useGetbusinessQuery,
+  useGetonebusinessQuery,
+  useRegisterbusinessMutation,
+  useUpdatebusinessMutation
 } = authApi;
