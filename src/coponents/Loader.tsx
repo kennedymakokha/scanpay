@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 const OverlayLoader = () => {
   const { user } = useSelector((state: any) => state.auth)
-  console.log(user)
+  // console.log(user)
   return (
     <View
       className={`absolute z-40 top-0 left-0 w-full h-full${user !== null ? "opacity-40 bg-black-50" : "bg-primary"} justify-center items-center z-50`}

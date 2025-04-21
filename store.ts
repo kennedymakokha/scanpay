@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { authApi } from './services/authApi';
+import { authApi } from './src/services/authApi';
 import authReducer from './src/features/auth/authSlice';
 import { persistReducer, persistStore } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';

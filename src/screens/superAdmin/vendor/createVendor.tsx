@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     Alert,
     ScrollView,
@@ -10,22 +9,34 @@ import {
     Platform,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import Icon from 'react-native-vector-icons/MaterialIcons'
 import { User } from '../../../../types';
 import { InputContainer } from '../../../coponents/input';
 import SelectInput from '../../../coponents/selectInput';
-import { requestLocationPermission } from '../../../../App';
+
+import { useRegistervendorMutation } from '../../../services/CategoryApi';
+import AlertContainer from '../../../coponents/alert';
+import { useGetSessionQuery } from '../../../services/authApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { toDropdownOptions } from '../../../utility/selectoptions';
+import { requestLocationPermission } from '../../../utility/locationPermisionRequest';
+
 const AddProductScreen = () => {
     const [visible, setVisible] = useState(false);
     const [image, setImage] = useState('');
+    const { data } = useGetSessionQuery({})
+    const [hide, setHide] = useState(true)
+    const [hideconfirm, setHideConfirm] = useState(true)
+    const [msg, setMsg] = useState({ msg: "", state: "" });
+    console.log(data)
+    const [postVendor, { isError, error }] = useRegistervendorMutation()
     const [useCurrentLocation, setUseCurrentLocation] = useState(true);
-    const [item, setItem] = useState({
+    const [item, setItem] = useState<any>({
         confirm_password: "",
         vendorName: "",
         fullname: "",
         role: "admin",
         ID_No: "",
-        business: "",
+        business: "68049ab92eef9ba9cf2761f6",
         phone_number: "",
         password: "",
         username: "",
@@ -46,30 +57,31 @@ const AddProductScreen = () => {
         lng, } = item
 
     const handleChange = (key: keyof User, value: string) => {
-        // setMsg({ msg: "", state: "" });
+        setMsg({ msg: "", state: "" });
 
-        setItem(prev => ({
+        setItem((prev: any) => ({
             ...prev,
             [key]: value
         }));
     };
-    const handleSubmit = () => {
-
+ 
+    const handleSubmit = async () => {
         try {
             console.log(item)
-        } catch (error) {
-
+            await postVendor(item).unwrap()
+        } catch (err) {
+            setMsg({ msg: `${error?.data}`, state: "error" })
+            console.log(err)
         }
-
-
     };
+
     useEffect(() => {
         if (useCurrentLocation) {
             Geolocation.getCurrentPosition(
                 position => {
                     const { latitude, longitude } = position.coords;
 
-                    setItem(prev => ({
+                    setItem((prev: any) => ({
                         ...prev,
                         lat: latitude.toString(),
                         lng: longitude.toString()
@@ -86,17 +98,17 @@ const AddProductScreen = () => {
             );
         }
     }, [useCurrentLocation]);
-    
+
     useEffect(() => {
         Geolocation.getCurrentPosition(
             (position: any) => {
                 console.log(position)
-                // setItem({
-                //   lat: position?.coords?.latitude,
-                //   lng: position?.coords?.longitude,
-                // //   latitudeDelta: 0.0001,
-                // //   longitudeDelta: 0.001,
-                // });
+                setItem({
+                  lat: position?.coords?.latitude,
+                  lng: position?.coords?.longitude,
+                //   latitudeDelta: 0.0001,
+                //   longitudeDelta: 0.001,
+                });
             },
             (error: any) => {
                 Alert.alert('Error', `Error: ${JSON.stringify(error)}`);
@@ -105,17 +117,20 @@ const AddProductScreen = () => {
         );
         return () => { };
     }, []);
+
+
     return (
         <KeyboardAvoidingView
             className="flex-1   bg-black-50  py-14"
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
+            {msg.msg && <AlertContainer msg={msg.msg} state={msg.state} />}
             <ScrollView className="px-4  pt-6">
-                <InputContainer value={fullname} onchange={(e: any) => handleChange("fullname", e)} placeholder="Business Owner's Name" />
-                <InputContainer value={ID_No} onchange={(e: any) => handleChange("ID_No", e)} placeholder="Business Owner's Identification Number" />
-                <InputContainer value={phone_number} onchange={(e: any) => handleChange("phone_number", e)} placeholder="Business Owner's Phone Number" />
-                <InputContainer value={username} onchange={(e: any) => handleChange("username", e)} placeholder="Business Owner's username" />
+                <InputContainer value={fullname} onChangeText={(e: any) => handleChange("fullname", e)} placeholder="Business Owner's Name" />
+                <InputContainer value={ID_No} keyboardType="numeric" onChangeText={(e: any) => handleChange("ID_No", e)} placeholder="Business Owner's Identification Number" />
+                <InputContainer value={phone_number} keyboardType="numeric" onChangeText={(e: any) => handleChange("phone_number", e)} placeholder="Business Owner's Phone Number" />
+                <InputContainer value={username} onChangeText={(e: any) => handleChange("username", e)} placeholder="Business Owner's username" />
                 {/* <TouchableOpacity
                     activeOpacity={1}
                     onPress={() => setUseCurrentLocation(!useCurrentLocation)}
@@ -141,11 +156,12 @@ const AddProductScreen = () => {
                                 </Text>
                             </TouchableOpacity>
                         </View>
-                        <View className="flex w-[80%]"><InputContainer editable={!useCurrentLocation} keyboardType="decimal-pad" value={lat} latlng="yes" onchange={(e: any) => handleChange("lat", e)} multiline={true} placeholder="latitude" /></View>
+                        <View className="flex w-[80%]">
+                            <InputContainer editable={!useCurrentLocation} keyboardType="decimal-pad" value={lat} latlng="yes" onChangeText={(e: any) => handleChange("lat", e)} multiline={true} placeholder="latitude" /></View>
 
                     </View>
                     <View className="flex">
-                        <InputContainer editable={!useCurrentLocation} keyboardType="decimal-pad" value={lng} latlng="yes" onchange={(e: any) => handleChange("lng", e)} multiline={true} placeholder="longitude" />
+                        <InputContainer editable={!useCurrentLocation} keyboardType="decimal-pad" value={lng} latlng="yes" onChangeText={(e: any) => handleChange("lng", e)} multiline={true} placeholder="longitude" />
                     </View>
                 </View>
 
@@ -158,15 +174,30 @@ const AddProductScreen = () => {
                     label="Select business category"
                     value={business}
                     onChange={(e: any) => handleChange("business", e)}
-                    options={[
-                        { label: 'Cosmetics', value: 'Cosmetics' },
-                        { label: 'Agriculture', value: 'Agriculture' },
-                        { label: 'Stationaries', value: 'Stationaries' },
-                    ]}
+                    options={toDropdownOptions([
+                        {
+                            "_id": "68049ab92eef9ba9cf2761f6",
+                            "business_name": "hardware ",
+                            "description": "a hardware  shop  ",
+                            "createdBy": "680496ae6f153c5098308659",
+                            "state": "active",
+                            "deletedAt": null,
+                            "createdAt": "2025-04-20T06:56:58.011Z",
+                            "updatedAt": "2025-04-20T06:56:58.011Z",
+                            "__v": 0
+                        }
+                    ], "business_name")}
                 />
-                <InputContainer value={vendorName} onchange={(e: any) => handleChange("vendorName", e)} placeholder="Name of business" />
-                <InputContainer value={password} onchange={(e: any) => handleChange("password", e)} placeholder="Password" />
-                <InputContainer value={confirm_password} onchange={(e: any) => handleChange("confirm_password", e)} placeholder="confirm password" />
+
+                <InputContainer value={vendorName} onChangeText={(e: any) => handleChange("vendorName", e)} placeholder="Name of business" />
+                <InputContainer
+                    hide={hide}
+                    setHide={() => setHide(!hide)}
+                    value={password} onChangeText={(e: any) => handleChange("password", e)} placeholder="Password" />
+                <InputContainer
+                    hide={hideconfirm}
+                    setHide={() => setHideConfirm(!hideconfirm)}
+                    value={confirm_password} onChangeText={(e: any) => handleChange("confirm_password", e)} placeholder="confirm password" />
                 <TouchableOpacity activeOpacity={1}
                     className="bg-gold-500 py-3 rounded-xl"
                     onPress={handleSubmit}

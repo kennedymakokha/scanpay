@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { User } from '../types';
+import { User } from '../../types';
 
 const baseUrl = 'https://scanapi.marapesa.com/api';
 
@@ -10,6 +10,7 @@ export const authApi = createApi({
     credentials: 'include', // use this if your backend uses cookies
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as any).auth?.token;
+      console.log("TOKEN",token)
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

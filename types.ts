@@ -32,7 +32,7 @@ export type User = {
     confirm_password?: any
     vendorName?: string;
     fullname?: string
-    role: "active" | "inactive";
+    role: "admin" | "superAdmin" | "client";
     ID_No: string
     business?: any;
     phone_number?: string,
@@ -40,8 +40,8 @@ export type User = {
     username?: string,
     otp?: string
     code?: string
-    lat:number
-    lng:number
+    lat: number
+    lng: number
 }
 export type Transaction = {
     id?: string;
@@ -49,4 +49,20 @@ export type Transaction = {
     amount: number;
     party?: string;
     date?: string;
+};
+
+export type InputProps = {
+    latlng?: string;
+    keyboardType?: string | any;
+    editable?: boolean;
+    multiline?: boolean;
+    value: string;
+    onChangeText: (text: string) => void;
+    placeholder: string;
+
+    hide?: boolean,
+    setHide?: any,
+
+
+    label?: string
 };

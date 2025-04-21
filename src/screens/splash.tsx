@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import OverlayLoader from '../coponents/Loader';
 
 import { useUser } from '../../contexts/userContext';
-import { useGetSessionQuery } from '../../services/authApi';
+import { useGetSessionQuery } from '../services/authApi';
 import { useSelector } from 'react-redux';
 
 
@@ -18,17 +18,19 @@ const SplashScreen = () => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                if (user) {
-                    navigation.replace('home');
-                } else {
-                    navigation.replace('login');
-                }
+              const res = await authorizedFetch('http://scanapi.marapesa.com/api/auth');
+              if (res?.userId) {
+                await AsyncStorage.setItem("userId", res?.userId);
+                navigation.navigate('home');
+              } else {
+                navigation.navigate('login');
+              }
             } catch (e) {
-                console.error(e);
-                navigation.replace('login');
+              console.error(e);
+              navigation.navigate('login');
             }
-        };
-        checkAuth();
+          };
+          checkAuth()
     }, []);
     return (
         <>

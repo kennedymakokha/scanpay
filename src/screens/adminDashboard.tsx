@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { useGetSessionQuery } from '../../services/authApi';
+import { useGetSessionQuery } from '../services/authApi';
 import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types';

@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RegisterLogin, { OtpView } from "./components/registerLogin";
 import OverlayLoader from "../../coponents/Loader";
 import AlertContainer from "../../coponents/alert";
-import { useLoginMutation, useSignupMutation, useActivateMutation } from "../../../services/authApi";
+import { useLoginMutation, useSignupMutation, useActivateMutation } from "../../services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
 
