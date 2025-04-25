@@ -30,6 +30,8 @@ export const Input: React.FC<InputProps> = ({
     <View className="flex w-full  h-20  mb-4 rounded-md bg-black-100 justify-center">
       {label && <Text className='px-2  tracking-widest pt-2 uppercase text-gold-500 font-bold'>{label}</Text>}
       <View className="flex flex-row  items-center justify-between px-4">
+
+
         <TextInput
           className=" rounded-xl text-gold-500"
           placeholder={placeholder}
@@ -40,6 +42,8 @@ export const Input: React.FC<InputProps> = ({
           keyboardType={keyboardType}
           autoCapitalize="none"
         />
+
+
         {hide !== undefined && <Icon onPress={setHide} name={hide ? "eye" : "eye-with-line"} size={30} color="#333333" />}
       </View>
 
@@ -58,6 +62,8 @@ export const InputContainer: React.FC<InputProps> = ({
   editable = true,
   multiline = false,
   placeholder,
+  hide,
+  setHide
 }) => {
   const theme = useColorScheme(); // 'dark' or 'light'
   const isDark = theme === 'dark';
@@ -72,18 +78,27 @@ export const InputContainer: React.FC<InputProps> = ({
     <View
       className={`flex w-full h-20 mb-4 rounded-lg justify-center ${containerBg}`}
     >
-      <TextInput
-        className={`px-4 py-3 text-lg font-bold text-base rounded-lg ${isDark ? 'text-gray-100' : 'text-gray-900'
-          }`}
-        placeholder={placeholder}
-        placeholderTextColor={isDark ? '#aaa' : '#666'}
-        value={value}
-        onChangeText={onChangeText}
-        editable={editable}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        textAlignVertical="top"
-      />
+      <View>
+        {value && <View className='px-4'>
+          <Text className={` ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
+            {placeholder}
+          </Text>
+        </View>}
+        <TextInput
+          className={`px-4 py-3 text-lg font-bold text-base rounded-lg ${isDark ? 'text-gray-100' : 'text-gray-900'
+            }`}
+          placeholder={placeholder}
+          placeholderTextColor={isDark ? '#aaa' : '#666'}
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={hide}
+          editable={editable}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          textAlignVertical="top"
+        />
+      </View>
+
     </View>
   );
 };

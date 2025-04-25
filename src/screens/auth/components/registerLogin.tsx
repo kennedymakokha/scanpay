@@ -11,7 +11,7 @@ const RegisterLogin = ({ item, handleChange, handleLogin, setIslogin, hide, setH
                 placeholder="Phone nunber"
                 value={item.phone_number}
                 onChangeText={(text: string) => handleChange("phone_number", text)}
-                keyboard="numeric"
+                keyboardType="numeric"
             />
             <Input
                 label="Password"
@@ -20,7 +20,7 @@ const RegisterLogin = ({ item, handleChange, handleLogin, setIslogin, hide, setH
                 placeholder="password"
                 value={item.password}
                 onChangeText={(text: string) => handleChange("password", text)}
-                keyboard="text"
+                keyboardType="text"
             />
             {!islogin && <Input
                 label="confirm Password"
@@ -29,7 +29,7 @@ const RegisterLogin = ({ item, handleChange, handleLogin, setIslogin, hide, setH
                 placeholder="confirm password"
                 value={item.confirm_password}
                 onChangeText={(text: string) => handleChange("confirm_password", text)}
-                keyboard="text"
+                keyboardType="text"
             />}
             <Button title="login" handleLogin={handleLogin} />
             <View className="flex flex-row  py-2 justify-center gap-x-4">
@@ -53,16 +53,16 @@ export const OtpView = ({ item, handleChange, handleLogin, setIslogin, hide, set
                 placeholder="one time pin"
                 value={item.otp}
                 onChangeText={(text: string) => handleChange("otp", text)}
-                keyboard="numeric"
+                keyboardType="numeric"
             />
 
 
             <Button title="confirm otp" handleLogin={handleLogin} />
             <View className="flex flex-row  py-2 justify-center gap-x-4">
-              
-                <TouchableOpacity  activeOpacity={1} onPress={() => setIslogin(!islogin)} >
+
+                <TouchableOpacity activeOpacity={1} onPress={() => setIslogin(!islogin)} >
                     <Text className="text-gold-400">
-                        Resend OTP 
+                        Resend OTP
                     </Text>
                 </TouchableOpacity>
             </View>

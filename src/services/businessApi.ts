@@ -1,49 +1,34 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { api } from './index';
 import { User } from '../../types';
 
-const baseUrl = 'https://scanapi.marapesa.com/api';
-
-export const authApi = createApi({
-  reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl,
-    credentials: 'include', // use this if your backend uses cookies
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth?.token;
-      console.log("TOKEN",token)
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+export const injectEndpoints = api.injectEndpoints({
   endpoints: builder => ({
     registerbusiness: builder.mutation({
       query: (body: User) => ({
-        url: '/business',
+        url: '/',
         method: 'POST',
         body,
       }),
     }),
     getbusiness: builder.query({
-      query: () => '/business',
+      query: () => ({ url: '/' }),
     }),
     updatebusiness: builder.mutation({
       query: (body: User) => ({
-        url: `/business/${body.id}`,
+        url: `/${body.id}`,
         method: 'put',
         body,
       }),
     }),
     deletebusiness: builder.mutation({
       query: (body: User) => ({
-        url: `/business/${body.id}`,
+        url: `/${body.id}`,
         method: 'delete',
 
       }),
     }),
     getonebusiness: builder.query({
-      query: (id) => `/business/${id}`,
+      query: (id) => `/${id}`,
     }),
 
   }),
@@ -55,4 +40,4 @@ export const {
   useGetonebusinessQuery,
   useRegisterbusinessMutation,
   useUpdatebusinessMutation
-} = authApi;
+} = injectEndpoints;

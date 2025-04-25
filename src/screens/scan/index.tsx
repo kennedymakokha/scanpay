@@ -10,6 +10,7 @@ import AlertContainer from '../../coponents/alert';
 import { authorizedFetch } from '../../utility/authorisedFetch';
 import OverlayLoader from '../../coponents/Loader';
 import { Item } from '../../../types';
+import { API_URL } from '@env';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -52,7 +53,7 @@ const QRScannerScreen: React.FC = () => {
         amount: item.amount,
         to: vendor
       };
-      const res = await authorizedFetch('http://scanapi.marapesa.com/api/wallet/pay', {
+      const res = await authorizedFetch(`${API_URL}/api/stk/pay`, {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -78,10 +79,8 @@ const QRScannerScreen: React.FC = () => {
 
       if (isScanning.current) return; // 👈 prevent re-trigger
       const url: any = codes?.[0]?.value;
-
       const domain = getDomain(`${url}`);
       if (!url) return;
-
       isScanning.current = true;
       setTimeout(() => {
         if (domain !== "marapesa.com") {
@@ -102,14 +101,12 @@ const QRScannerScreen: React.FC = () => {
       }, 3000);
     },
   });
-
   const handleChange = (key: keyof Item, value: string) => {
     setItem(prev => ({
       ...prev,
       [key]: value,
     }));
   };
-
   useEffect(() => {
     if (errorMessage) {
       const timeout = setTimeout(() => setErrorMessage(''), 5000);
@@ -175,7 +172,7 @@ const QRScannerScreen: React.FC = () => {
                 placeholder="Phone number"
                 value={item.phone_number}
                 onChangeText={(text: string) => handleChange('phone_number', text)}
-                keyboard="numeric"
+                keyboardType="numeric"
               />
             )}
             <Input
@@ -183,12 +180,12 @@ const QRScannerScreen: React.FC = () => {
               placeholder="Amount"
               value={item.amount}
               onChangeText={(text: string) => handleChange('amount', text)}
-              keyboard="numeric"
+              keyboardType="numeric"
             />
             <CustomCheckbox title="Use a different Number" checked={checked} setChecked={() => setChecked(!checked)} />
             {errorMessage !== '' && <AlertContainer msg={errorMessage} state="error" />}
             <Button title="Pay" handleLogin={submitForm} />
-            <Text className="text-red-500 text-center capitalize mt-10">{vendor}</Text>
+            <Text className="text-red-500 text-center capitalize mt-10">{vendor.split('').reverse().join('')}</Text>
           </View>
         </View>
       )}

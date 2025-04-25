@@ -14,24 +14,8 @@ import { useSelector } from 'react-redux';
 
 const SplashScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const { user } = useSelector((state: any) => state.auth)
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-              const res = await authorizedFetch('http://scanapi.marapesa.com/api/auth');
-              if (res?.userId) {
-                await AsyncStorage.setItem("userId", res?.userId);
-                navigation.navigate('home');
-              } else {
-                navigation.navigate('login');
-              }
-            } catch (e) {
-              console.error(e);
-              navigation.navigate('login');
-            }
-          };
-          checkAuth()
-    }, []);
+   
+     
     return (
         <>
             <OverlayLoader />

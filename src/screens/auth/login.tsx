@@ -11,6 +11,7 @@ import AlertContainer from "../../coponents/alert";
 import { useLoginMutation, useSignupMutation, useActivateMutation } from "../../services/authApi";
 import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function LoginScreen() {
 
@@ -27,7 +28,7 @@ export default function LoginScreen() {
     const [islogin, setIslogin] = useState(true)
     const [msg, setMsg] = useState({ msg: "", state: "" });
     const [step, setStep] = useState(1);
-    const { user } = useSelector((state: any) => state.auth)
+    // const { uer } = useAuth();
     const [item, setItem] = useState<any>({
         phone_number: "0700000000",
         password: "admin123",
@@ -37,10 +38,11 @@ export default function LoginScreen() {
     })
     type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
     const navigation = useNavigation<NavigationProp>();
-    const [login, { isLoading, error }] = useLoginMutation();
+    const [loginUser, { isLoading, error }] = useLoginMutation();
     const [register, { isLoading: registrationLoading }] = useSignupMutation();
     const [activate, { isLoading: activationLoading }] = useActivateMutation();
     const dispatch = useDispatch()
+    const { login } = useAuth();
     const handleChange = (key: keyof Item, value: string) => {
         setMsg({ msg: "", state: "" });
         setItem((prev: any) => ({
@@ -64,13 +66,14 @@ export default function LoginScreen() {
                 setMsg({ msg: "Passwords do not match", state: "error" });
                 return;
             }
-            const data = islogin ? await login(item).unwrap() : await register(item).unwrap();
+            const data = islogin ? await loginUser(item).unwrap() : await register(item).unwrap();
 
             if (data.ok === true) {
                 if (islogin) {
                     dispatch(setCredentials({ ...data }))
                     await AsyncStorage.setItem("accessToken", data.token);
                     if (data?.exp) {
+                        login(data.token);
                         await AsyncStorage.setItem("tokenExpiry", data.exp.toString());
                     }
                 }
@@ -134,18 +137,19 @@ export default function LoginScreen() {
 
         }
     };
-    useEffect(() => {
-        if (user) {
-            navigation.replace("home")
-        }
-    }, [])
+    // useEffect(() => {
+    //     if (user) {
+    //         navigation.replace("home")
+    //     }
+    // }, [])
+
 
     return (
         <KeyboardAvoidingView className=""
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{ flex: 1 }}
         >
-            {isLoading || activationLoading || registrationLoading && <OverlayLoader />}
+            {isLoading && <OverlayLoader />}
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView
                     contentContainerStyle={{ flexGrow: 1 }}

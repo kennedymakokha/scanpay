@@ -14,19 +14,24 @@ import Vendor from "../screens/superAdmin/vendor";
 import Business from "../screens/superAdmin/categories";
 import CreateVendor from "../screens/superAdmin/vendor/createVendor";
 import { useToggle } from "../../contexts/ToggleContext";
+import { useAuth } from "../../contexts/AuthContext";
 const Stack = createNativeStackNavigator();
 
 export function RootStack() {
+    const { token } = useAuth();
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="splash" options={{}} component={Splash} />
-            <Stack.Screen name="login" component={LoginScreen} />
-            <Stack.Screen name="home" options={{}} component={RootDrawer} />
-
+            {/* <Stack.Screen name="splash" options={{}} component={Splash} /> */}
+            {token ? (
+                <Stack.Screen name="home" options={{}} component={RootDrawer} />
+            ) : (
+                <Stack.Screen name="login" component={LoginScreen} />
+            )}
 
         </Stack.Navigator>
     );
 }
+
 
 export function ClientStack() {
     return (

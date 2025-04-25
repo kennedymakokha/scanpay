@@ -5,8 +5,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Icon1 from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../features/auth/authSlice';
+// import { logout } from '../features/auth/authSlice';
 import { useTheme } from '../../contexts/themeContext';
+import { useAuth } from '../../contexts/AuthContext';
 const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => {
   const { user } = useSelector((state: any) => state.auth)
   const { theme, toggleTheme } = useTheme();
@@ -68,10 +69,12 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
   } else {
     data = salesAdminroutes
   }
+  const { logout } = useAuth();
   const logoutUser = async () => {
-    await dispatch(logout())
-    await AsyncStorage.clear();
-    navigation.navigate("login"); logout
+    await logout()
+    await AsyncStorage.clear()
+    await AsyncStorage.removeItem('accessToken')
+    navigation.navigate('Home', { screen: `login` }); 
   }
   return (
     <View className="flex-1 bg-black py-16 px-5">

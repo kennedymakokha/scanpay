@@ -15,7 +15,9 @@ import { RootStackParamList } from './types';
 import { authorizedFetch } from './src/utility/authorisedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geolocation from '@react-native-community/geolocation';
-
+import { API_URL } from '@env';
+import { AuthProvider } from './contexts/AuthContext';
+const baseUrl = `${API_URL}/api`;
 
 function App(): React.JSX.Element {
 
@@ -95,26 +97,12 @@ function App(): React.JSX.Element {
   };
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const checkAuth = async () => {
-    try {
-      const res = await authorizedFetch('http://scanapi.marapesa.com/api/auth');
-      console.log("RES", res)
-      if (res?.userId) {
-        await AsyncStorage.setItem("userId", res?.userId);
-        navigation.navigate('home');
-      } else {
-        navigation.navigate('login');
-      }
-    } catch (e) {
-      console.error(e);
-      navigation.navigate('login');
-    }
-  };
+ 
   useEffect(() => {
     requestCameraPermission();
     requestLocationPermission()
     getLocationPermission()
-    checkAuth();
+ 
   }, []);
 
   const { theme } = useTheme();
@@ -124,13 +112,15 @@ function App(): React.JSX.Element {
       <View className={`flex-1 ${themeClass}`}>
         <ToggleProvider>
           <ThemeProvider>
-            <Provider store={store}>
-              <PersistGate loading={null} persistor={persistor}>
-                <UserProvider>
-                  <RootStack />
-                </UserProvider>
-              </PersistGate>
-            </Provider>
+            <AuthProvider>
+              <Provider store={store}>
+                <PersistGate loading={null} persistor={persistor}>
+                  <UserProvider>
+                    <RootStack />
+                  </UserProvider>
+                </PersistGate>
+              </Provider>
+            </AuthProvider>
           </ThemeProvider>
         </ToggleProvider>
       </View>

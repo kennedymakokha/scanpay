@@ -1,31 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { api } from './index'
 import { User } from '../../types';
-
-const baseUrl = 'https://scanapi.marapesa.com/api';
-
-const getAuth = async () => {
-  try {
-    let t = localStorage.getItem("accessToken");
-    return `${t}`; // Return the retrieved token
-  } catch (error) {
-    console.error('Error fetching auth token:', error);
-    throw error; // Rethrow the error to handle it further up the call stack if needed
-  }
-}
-export const authApi = createApi({
-  reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl,
-    credentials: 'include', // use this if your backend uses cookies
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as any).auth?.token;
-   
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+export const injectEndpoints = api.injectEndpoints({
   endpoints: builder => ({
     signup: builder.mutation({
       query: (body: User) => ({
@@ -66,4 +41,4 @@ export const {
   useLoginMutation,
   useGetSessionQuery,
   useLogoutMutation,
-} = authApi;
+} = injectEndpoints;

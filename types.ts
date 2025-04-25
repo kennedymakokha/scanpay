@@ -7,6 +7,7 @@ export type RootStackParamList = {
     Home: undefined
     businesses: undefined
     vendor: undefined
+
     // Add other routes here
 };
 
@@ -56,7 +57,7 @@ export type InputProps = {
     keyboardType?: string | any;
     editable?: boolean;
     multiline?: boolean;
-    value: string;
+    value: string | any;
     onChangeText: (text: string) => void;
     placeholder: string;
 

@@ -14,9 +14,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserDashboard from '../screens/userDashboard';
 import { useUser } from '../../contexts/userContext';
 import { useSelector } from 'react-redux';
+import LoginScreen from '../screens/auth/login';
+import { useAuth } from '../../contexts/AuthContext';
 const Drawer = createDrawerNavigator();
 
 export function RootDrawer() {
+    const { token, } = useAuth();
+    console.log(token)
+    const getMainStack = () => {
+        if (!token) return LoginScreen; // or null
+        if (user?.role === 'client') return ClientStack;
+        if (user?.role === 'superAdmin' || user?.role === 'sale') return SuperAdminStack;
+        if (user?.role === 'admin') return AdminStack;
+        return LoginScreen;
+    };
+
     const { user } = useSelector((state: any) => state.auth)
     return (
         <Drawer.Navigator
@@ -65,7 +77,8 @@ export function RootDrawer() {
                         </>
                     ),
                 })}
-                component={user?.role === "client" ? ClientStack : user?.role === "superAdmin" ? SuperAdminStack : AdminStack} />
+                component={getMainStack()}
+            />
 
             <Drawer.Screen name="Profile" component={ProfileScreen} />
 

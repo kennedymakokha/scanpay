@@ -15,22 +15,15 @@ import SelectInput from '../../../coponents/selectInput';
 
 import { useRegistervendorMutation } from '../../../services/CategoryApi';
 import AlertContainer from '../../../coponents/alert';
-import { useGetSessionQuery } from '../../../services/authApi';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { toDropdownOptions } from '../../../utility/selectoptions';
-import { requestLocationPermission } from '../../../utility/locationPermisionRequest';
 
+import { toDropdownOptions } from '../../../utility/selectoptions';
+import OverlayLoader from '../../../coponents/Loader';
+import { useGetbusinessQuery } from '../../../services/businessApi';
+import { requestLocationPermission } from '../../../utility/locationPermisionRequest';
+import { authorizedFetch } from '../../../utility/authorisedFetch';
+import { API_URL } from '@env';
 const AddProductScreen = () => {
-    const [visible, setVisible] = useState(false);
-    const [image, setImage] = useState('');
-    const { data } = useGetSessionQuery({})
-    const [hide, setHide] = useState(true)
-    const [hideconfirm, setHideConfirm] = useState(true)
-    const [msg, setMsg] = useState({ msg: "", state: "" });
-    console.log(data)
-    const [postVendor, { isError, error }] = useRegistervendorMutation()
-    const [useCurrentLocation, setUseCurrentLocation] = useState(true);
-    const [item, setItem] = useState<any>({
+    const initialitem = {
         confirm_password: "",
         vendorName: "",
         fullname: "",
@@ -43,7 +36,17 @@ const AddProductScreen = () => {
         lat: "",
         lng: "",
 
-    })
+    }
+    const [visible, setVisible] = useState(false);
+    const [image, setImage] = useState('');
+    const { data, error: Er, isError: Er11 } = useGetbusinessQuery({})
+    console.log(data, Er, Er11)
+    const [hide, setHide] = useState(true)
+    const [hideconfirm, setHideConfirm] = useState(true)
+    const [msg, setMsg] = useState({ msg: "", state: "" });
+    const [postVendor, { isError, error, isLoading }] = useRegistervendorMutation()
+    const [useCurrentLocation, setUseCurrentLocation] = useState(true);
+    const [item, setItem] = useState<any>(initialitem)
     const { confirm_password,
         vendorName,
         fullname,
@@ -64,60 +67,50 @@ const AddProductScreen = () => {
             [key]: value
         }));
     };
- 
+
     const handleSubmit = async () => {
         try {
-            console.log(item)
-            await postVendor(item).unwrap()
+            let res = await postVendor(item).unwrap()
+            console.log(res)
+            setItem(initialitem)
+            setMsg({ msg: "Vendor added Successfully", state: "success" });
         } catch (err) {
-            setMsg({ msg: `${error?.data}`, state: "error" })
-            console.log(err)
+            console.log(error)
+            setMsg({ msg: `${error ? error?.data : ""}`, state: "error" })
+
         }
     };
+
 
     useEffect(() => {
         if (useCurrentLocation) {
             Geolocation.getCurrentPosition(
-                position => {
-                    const { latitude, longitude } = position.coords;
+                (position: any) => {
 
                     setItem((prev: any) => ({
                         ...prev,
-                        lat: latitude.toString(),
-                        lng: longitude.toString()
+                        lat: position?.coords?.latitude.toString(),
+                        lng: position?.coords?.longitude.toString()
 
                     }));
-
                 },
-                error => {
-                    console.warn(error.message);
+                (error: any) => {
+                    Alert.alert('Error', `Error: ${JSON.stringify(error)}`);
                     requestLocationPermission()
-                    // Alert.alert('Location Error', error.message);
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+                { enableHighAccuracy: false, timeout: 15000, maximumAge: 10000 },
             );
+            return () => { };
         }
     }, [useCurrentLocation]);
 
+    const getBusiness = async () => {
+        const res = await authorizedFetch(`${API_URL}/api/business`);
+        console.log(res)
+    }
     useEffect(() => {
-        Geolocation.getCurrentPosition(
-            (position: any) => {
-                console.log(position)
-                setItem({
-                  lat: position?.coords?.latitude,
-                  lng: position?.coords?.longitude,
-                //   latitudeDelta: 0.0001,
-                //   longitudeDelta: 0.001,
-                });
-            },
-            (error: any) => {
-                Alert.alert('Error', `Error: ${JSON.stringify(error)}`);
-            },
-            { enableHighAccuracy: false, timeout: 15000, maximumAge: 10000 },
-        );
-        return () => { };
-    }, []);
-
+        getBusiness()
+    }, [])
 
     return (
         <KeyboardAvoidingView
@@ -125,6 +118,7 @@ const AddProductScreen = () => {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
+            {isLoading && <OverlayLoader />}
             {msg.msg && <AlertContainer msg={msg.msg} state={msg.state} />}
             <ScrollView className="px-4  pt-6">
                 <InputContainer value={fullname} onChangeText={(e: any) => handleChange("fullname", e)} placeholder="Business Owner's Name" />
@@ -190,14 +184,6 @@ const AddProductScreen = () => {
                 />
 
                 <InputContainer value={vendorName} onChangeText={(e: any) => handleChange("vendorName", e)} placeholder="Name of business" />
-                <InputContainer
-                    hide={hide}
-                    setHide={() => setHide(!hide)}
-                    value={password} onChangeText={(e: any) => handleChange("password", e)} placeholder="Password" />
-                <InputContainer
-                    hide={hideconfirm}
-                    setHide={() => setHideConfirm(!hideconfirm)}
-                    value={confirm_password} onChangeText={(e: any) => handleChange("confirm_password", e)} placeholder="confirm password" />
                 <TouchableOpacity activeOpacity={1}
                     className="bg-gold-500 py-3 rounded-xl"
                     onPress={handleSubmit}
