@@ -17,9 +17,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geolocation from '@react-native-community/geolocation';
 import { API_URL } from '@env';
 import { AuthProvider } from './contexts/AuthContext';
+import messaging, { getMessaging, getToken, onMessage } from '@react-native-firebase/messaging';
 const baseUrl = `${API_URL}/api`;
-
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+;
+import { SocketProvider } from './contexts/SocketContext';
+import { getApp } from '@react-native-firebase/app';
 function App(): React.JSX.Element {
+
 
   const getLocationPermission = async () => {
     if (Platform.OS === 'ios') {
@@ -97,34 +102,60 @@ function App(): React.JSX.Element {
   };
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
- 
+
   useEffect(() => {
     requestCameraPermission();
     requestLocationPermission()
     getLocationPermission()
- 
+
+  }, []);
+
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const app = getApp();
+        const messaging = getMessaging(app);
+        const fcmToken = await getToken(messaging);
+        await AsyncStorage.setItem('fcmToken', fcmToken);
+        console.log('FCM Token:', fcmToken);
+      } catch (error) {
+        console.error('Error fetching FCM token:', error);
+      }
+    };
+
+    fetchToken();
+
+    const unsubscribe = onMessage(getMessaging(getApp()), async (remoteMessage) => {
+      console.log('Received foreground push:', remoteMessage);
+    });
+
+    return unsubscribe;
   }, []);
 
   const { theme } = useTheme();
   const themeClass = theme === 'dark' ? 'dark' : '';
   return (
     <View className="flex-1 dark bg-black-50">
-      <View className={`flex-1 ${themeClass}`}>
-        <ToggleProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <Provider store={store}>
-                <PersistGate loading={null} persistor={persistor}>
-                  <UserProvider>
-                    <RootStack />
-                  </UserProvider>
-                </PersistGate>
-              </Provider>
-            </AuthProvider>
-          </ThemeProvider>
-        </ToggleProvider>
-      </View>
-
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View className={`flex-1 ${themeClass}`}>
+          <SocketProvider>
+            <ToggleProvider>
+              <ThemeProvider>
+                <AuthProvider>
+                  <Provider store={store}>
+                    <PersistGate loading={null} persistor={persistor}>
+                      <UserProvider>
+                        <RootStack />
+                      </UserProvider>
+                    </PersistGate>
+                  </Provider>
+                </AuthProvider>
+              </ThemeProvider>
+            </ToggleProvider>
+          </SocketProvider>
+        </View>
+      </GestureHandlerRootView>
     </View>
   );
 }

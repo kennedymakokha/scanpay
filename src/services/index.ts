@@ -8,7 +8,6 @@ export const api = createApi({
         // credentials: 'include', // use this if your backend uses cookies
         prepareHeaders: (headers, { getState }) => {
             const token = (getState() as any).auth?.token;
-            console.log("TOKEN", token)
             if (token) {
                 headers.set('Authorization', `Bearer ${token}`);
             }

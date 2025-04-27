@@ -12,7 +12,9 @@ import { useLoginMutation, useSignupMutation, useActivateMutation } from "../../
 import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
 import { useAuth } from "../../../contexts/AuthContext";
+import { io, Socket } from 'socket.io-client'
 
+const SOCKET_URL = `${process.env.SOCKET_SERVER_URL}`;
 export default function LoginScreen() {
 
     type Item = {
@@ -28,10 +30,11 @@ export default function LoginScreen() {
     const [islogin, setIslogin] = useState(true)
     const [msg, setMsg] = useState({ msg: "", state: "" });
     const [step, setStep] = useState(1);
-    // const { uer } = useAuth();
+
     const [item, setItem] = useState<any>({
-        phone_number: "0700000000",
-        password: "admin123",
+        phone_number: "0712345678",
+        password: "+254712345678",
+        fcmToken: "",
         confirm_password: "",
         username: "Champion intel",
         code: ""
@@ -52,9 +55,13 @@ export default function LoginScreen() {
     };
     const handleSubmit = async (e?: any) => {
         try {
-
-            if (e?.preventDefault) e.preventDefault();
-
+            let fcmToken = await AsyncStorage.getItem('fcmToken');
+            
+            setItem((prev: any) => ({
+                ...prev,
+                fcmToken: fcmToken
+            })) 
+        
             setMsg({ msg: "", state: "" });
 
             if (!item.phone_number || !item.password) {
@@ -79,6 +86,7 @@ export default function LoginScreen() {
                 }
                 setMsg({ msg: `${islogin ? "Login successful! Redirecting..." : "Registration successful! Please verify your account."}`, state: "success" });
                 if (islogin) {
+
                     navigation.navigate("home");
 
                 } else {

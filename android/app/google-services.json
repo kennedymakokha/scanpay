@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "805799477333",
+    "project_id": "learnnia-3475a",
+    "storage_bucket": "learnnia-3475a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805799477333:android:a666f529f4f13c25b994dc",
+        "android_client_info": {
+          "package_name": "com.buz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7ciolYBjtvvRtCFb04F4ov5Xnp-OKFYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

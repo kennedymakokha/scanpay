@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
-  Modal,
+  Modal, Image,
   TextInput,
   Pressable,
 } from 'react-native';
+import { useGetlogsQuery } from '../services/stkApi';
+import { useSocket } from '../../contexts/SocketContext';
+import { FormatDate } from '../utility/formatDate';
+import { useSelector } from 'react-redux';
 
 type Transaction = {
   id: string;
@@ -25,21 +29,52 @@ const transactions: Transaction[] = [
 ];
 
 const WalletView = () => {
+  const { socket } = useSocket();
   const [modalVisible, setModalVisible] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const balance = 115.25;
-
+  const [paying, setPaying] = useState(false)
+  const balance1 = 115.25;
   const handleWithdraw = () => {
     console.log('Withdraw:', withdrawAmount);
     setModalVisible(false);
     setWithdrawAmount('');
   };
+  const  balance  = useSelector((state: any) => {
+    console.log(state)
+  })
+  const { data, isLoading, isSuccess, error, refetch } = useGetlogsQuery({ page: 1, limit: paying ? 2 : 6 });
+  useEffect(() => {
+    socket?.on("payment-start", (data) => {
+      setPaying(data)
+    })
+  }, [])
+  useEffect(() => {
 
+    socket?.on("payment-end", (data) => {
+      refetch()
+      setPaying(data)
+    })
+  }, [])
+  const renderItem = ({ item }: any) => (
+    <View className="bg-gray-800 p-4 rounded-xl mb-3 flex-row justify-between shadow-sm">
+
+      <Text className="text-gold-500 text-base">
+        {item?.type === 'Sent' ? `Sent to ${item?.vendor}` : ` Ksh ${item?.amount}  ${item?.phone_number} `}
+      </Text>
+      <Text
+        className={`text-base font-bold ${item?.ResponseCode !== 0 ? 'text-red-400' : 'text-green-400'
+          }`}
+      >
+        {FormatDate(item?.createdAt) || ''}
+        {/* Ksh {Math.abs(item?.amount).toFixed(2)} */}
+      </Text>
+    </View>
+  );
   return (
     <View className="flex-1 bg-black-50 px-5 pt-[80px]">
 
       <Text className="text-4xl font-semibold text-blue-400 my-6">
-        Ksh {balance.toFixed(2)}
+        Ksh {balance1.toFixed(2)}
       </Text>
 
       <View className="flex-row space-x-3 mb-6">
@@ -55,21 +90,9 @@ const WalletView = () => {
       <Text className="text-xl font-medium mb-3 text-white">Recent Transactions</Text>
 
       <FlatList
-        data={transactions}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View className="bg-gray-800 p-4 rounded-xl mb-3 flex-row justify-between shadow-sm">
-            <Text className="text-white text-base">
-              {item.type === 'Sent' ? `Sent to ${item.to}` : `Received from ${item.from}`}
-            </Text>
-            <Text
-              className={`text-base font-bold ${item.amount < 0 ? 'text-red-400' : 'text-green-400'
-                }`}
-            >
-              Ksh {Math.abs(item.amount).toFixed(2)}
-            </Text>
-          </View>
-        )}
+        data={data === undefined ? [...Array(10)] : data?.logs}
+        keyExtractor={(item) => item?._id}
+        renderItem={data !== undefined && isSuccess ? renderItem : LoaderCard}
       />
 
       {/* Withdraw Modal */}
@@ -112,5 +135,11 @@ const WalletView = () => {
     </View>
   );
 };
+const LoaderCard = () => (
+  <View className="bg-gray-800 animate-pulse p-4 rounded-xl mb-3 flex-row justify-between items-center shadow-sm">
+    <View className="bg-gray-700 h-4 w-32 rounded-md animate-pulse" />
+    <View className="bg-gray-700 h-4 w-20 rounded-md animate-pulse" />
+  </View>
+);
 
 export default WalletView;

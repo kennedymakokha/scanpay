@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -10,6 +10,21 @@ import { useTheme } from '../../contexts/themeContext';
 import { useAuth } from '../../contexts/AuthContext';
 const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => {
   const { user } = useSelector((state: any) => state.auth)
+  const { token, } = useAuth();
+  const [data, setData] = useState<any>([
+    {
+      title: "My Transactions",
+      path: "transactions",
+      nested: true,
+      icon: "swap-horizontal-outline"
+    },
+    {
+      title: "My Scan-points",
+      path: "transactions",
+      nested: true,
+      icon: "data-matrix-scan"
+    }
+  ])
   const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch()
   const Adminroutes = [
@@ -24,20 +39,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
       path: "Scan",
       icon: "data-matrix-scan"
     }]
-  const Userroutes = [
-    {
-      title: "My Transactions",
-      path: "transactions",
-      nested: true,
-      icon: "swap-horizontal-outline"
-    },
-    {
-      title: "My Scan-points",
-      path: "transactions",
-      nested: true,
-      icon: "data-matrix-scan"
-    }
-  ]
+
   const superAdminroutes = [
     {
       title: "Business Categories",
@@ -61,20 +63,24 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
     },
   ]
 
-  let data: any = Userroutes
-  if (user?.role === "admin") {
-    data = Adminroutes
-  } else if (user?.role === "superAdmin") {
-    data = superAdminroutes
-  } else {
-    data = salesAdminroutes
-  }
+  useEffect(() => {
+    if (!token) {
+      navigation.navigate('Home', { screen: `login` });
+    }
+    if (user?.role === "admin") {
+      setData(Adminroutes)
+    } else if (user?.role === "superAdmin") {
+      setData(superAdminroutes)
+    } else {
+      setData(salesAdminroutes)
+    }
+  }, [token])
+
   const { logout } = useAuth();
   const logoutUser = async () => {
     await logout()
-    await AsyncStorage.clear()
     await AsyncStorage.removeItem('accessToken')
-    navigation.navigate('Home', { screen: `login` }); 
+    navigation.navigate('Home', { screen: `login` });
   }
   return (
     <View className="flex-1 bg-black py-16 px-5">

@@ -1,35 +1,46 @@
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import QRScannerScreen from '../screens/scan';
 import CustomDrawer from './customdrawer';
-import Transactions from '../screens/scan/transactions';
-import { AdminStack, ClientStack, RootStack, SuperAdminStack } from './rootStack';
-import AdminDashboard from '../screens/adminDashboard';
+import { AdminStack, ClientStack, SuperAdminStack } from './rootStack';
 import ProfileScreen from '../screens/profileScreen';
-import WalletView from '../screens/wallet';
 import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useEffect, useState } from 'react';
-import { authorizedFetch } from '../utility/authorisedFetch';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import UserDashboard from '../screens/userDashboard';
-import { useUser } from '../../contexts/userContext';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import LoginScreen from '../screens/auth/login';
 import { useAuth } from '../../contexts/AuthContext';
+
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
+import { useNavigation } from '@react-navigation/native';
+import { useSocket } from '../../contexts/SocketContext';
+
 const Drawer = createDrawerNavigator();
 
+const { token, } = useAuth();
 export function RootDrawer() {
-    const { token, } = useAuth();
-    console.log(token)
+    const { socket } = useSocket();
+
+    type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+    const navigation = useNavigation<NavigationProp>();
     const getMainStack = () => {
         if (!token) return LoginScreen; // or null
         if (user?.role === 'client') return ClientStack;
         if (user?.role === 'superAdmin' || user?.role === 'sale') return SuperAdminStack;
         if (user?.role === 'admin') return AdminStack;
-        return LoginScreen;
+        return LoginScreen; 
     };
+    useEffect(() => {
+        getMainStack()
+    }, [token])
 
+    useEffect(() => {
+        if (!user) {
+            navigation.replace("login")
+        }
+    }, [token])
     const { user } = useSelector((state: any) => state.auth)
+
     return (
         <Drawer.Navigator
             drawerContent={(props) => <CustomDrawer {...props} />}

@@ -75,8 +75,10 @@ const AddProductScreen = () => {
             setItem(initialitem)
             setMsg({ msg: "Vendor added Successfully", state: "success" });
         } catch (err) {
-            console.log(error)
-            setMsg({ msg: `${error ? error?.data : ""}`, state: "error" })
+            setMsg({ 
+                msg: `${error && 'data' in error ? error.data : ""}`, 
+                state: "error" 
+            })
 
         }
     };

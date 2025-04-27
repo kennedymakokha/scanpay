@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(newToken);
         navigation.reset({
             index: 0,
-            routes: [{ name: 'home' }],
+            routes: [{ name: 'Home' }],
         });
     };
 
