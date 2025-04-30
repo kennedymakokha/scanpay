@@ -8,9 +8,10 @@ import { useDispatch, useSelector } from 'react-redux';
 // import { logout } from '../features/auth/authSlice';
 import { useTheme } from '../../contexts/themeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAuthContext } from '../../contexts/AuthContext1';
 const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => {
   const { user } = useSelector((state: any) => state.auth)
-  const { token, } = useAuth();
+ const { token, logout } = useAuthContext();
   const [data, setData] = useState<any>([
     {
       title: "My Transactions",
@@ -76,11 +77,11 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
     }
   }, [token])
 
-  const { logout } = useAuth();
+ 
   const logoutUser = async () => {
     await logout()
     await AsyncStorage.removeItem('accessToken')
-    navigation.navigate('Home', { screen: `login` });
+   
   }
   return (
     <View className="flex-1 bg-black py-16 px-5">

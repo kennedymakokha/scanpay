@@ -42,13 +42,7 @@ export default function Dashboard() {
         <Section title="⚙️ App Settings" />
         <Section title="🔔 Push Notifications" />
       </View>
-      {/* <Pressable onPress={() => setOpen(true)} className="px-4 py-2 bg-blue-600 rounded-full">
-        <Text className="text-white font-semibold">Open Drawer</Text>
-      </Pressable>
-
-      <BottomDrawer visible={open} onClose={() => setOpen(false)}>
-        <Text className="text-lg font-bold">Swipe down or tap outside to close</Text>
-      </BottomDrawer> */}
+     
     </ScrollView>
   );
 }

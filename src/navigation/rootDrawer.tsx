@@ -14,13 +14,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types';
 import { useNavigation } from '@react-navigation/native';
 import { useSocket } from '../../contexts/SocketContext';
+import { useAuthContext } from '../../contexts/AuthContext1';
 
 const Drawer = createDrawerNavigator();
+const { socket } = useSocket();
 
-const { token, } = useAuth();
 export function RootDrawer() {
+    const { token, logout } = useAuthContext();
     const { socket } = useSocket();
-
     type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
     const navigation = useNavigation<NavigationProp>();
     const getMainStack = () => {
@@ -28,7 +29,7 @@ export function RootDrawer() {
         if (user?.role === 'client') return ClientStack;
         if (user?.role === 'superAdmin' || user?.role === 'sale') return SuperAdminStack;
         if (user?.role === 'admin') return AdminStack;
-        return LoginScreen; 
+        return LoginScreen;
     };
     useEffect(() => {
         getMainStack()
@@ -39,22 +40,28 @@ export function RootDrawer() {
             navigation.replace("login")
         }
     }, [token])
+
     const { user } = useSelector((state: any) => state.auth)
 
+    useEffect(() => {
+
+        socket?.emit('join_room', user._id);
+
+    }, [])
     return (
         <Drawer.Navigator
             drawerContent={(props) => <CustomDrawer {...props} />}
 
             screenOptions={{
                 drawerLabelStyle: {
-                    color: 'red', // <-- change drawer text color
+                    color: 'Gold', // <-- change drawer text color
                     fontSize: 16,
                 },
                 drawerActiveTintColor: 'white', // <-- active item text color
                 drawerInactiveTintColor: 'gray', // <-- inactive item text color
                 drawerActiveBackgroundColor: '#FF6600', // 
                 headerTransparent: true,
-                // headerTitle: '',
+                headerTitle: 'Home',
                 headerShadowVisible: false, // for iOS
                 headerTintColor: '#d4af37', // <-- changes hamburger (and back) icon color
 

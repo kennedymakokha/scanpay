@@ -11,13 +11,7 @@ import { authorizedFetch } from '../../utility/authorisedFetch';
 import OverlayLoader from '../../coponents/Loader';
 import { Item } from '../../../types';
 import { API_URL } from '@env';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
-import ScanOverlay from './components/animatedOverlay';
+
 const QRScannerScreen: React.FC = () => {
 
 
@@ -135,25 +129,16 @@ const QRScannerScreen: React.FC = () => {
   if (!device) {
     return <NoCameraDeviceError />;
   }
-  const translateY = useSharedValue(0);
 
-  useEffect(() => {
-    translateY.value = withRepeat(
-      withTiming(200 * 0.4, { duration: 2000 }),
-      -1,
-      true
-    );
-  }, []);
 
-  const animatedLineStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+
+
   return (
     <View className={`flex-1 relative items-center justify-center ${show ? 'bg-black-200' : 'bg-black-50'}`}>
       {loading && <OverlayLoader />}
       {codeError && errorMessage !== "" && <AlertContainer msg={errorMessage} state="error" />}
       <View className="w-1/2 self-center  ">
-        {/* <ScanOverlay /> */}
+      
       </View>
       <Camera
         style={{ width: 200, height: 200 }}

@@ -4,14 +4,17 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Modal, Image,
+  Modal,
   TextInput,
   Pressable,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import { useGetlogsQuery } from '../services/stkApi';
+import { useGetbalanceQuery, useGetlogsQuery } from '../services/stkApi';
 import { useSocket } from '../../contexts/SocketContext';
 import { FormatDate } from '../utility/formatDate';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setBalance } from '../features/auth/balance/balanceSlice';
 
 type Transaction = {
   id: string;
@@ -22,63 +25,86 @@ type Transaction = {
   date: string;
 };
 
-const transactions: Transaction[] = [
-  { id: '1', type: 'Sent', amount: -25.0, to: 'Alice', date: '2025-04-15' },
-  { id: '2', type: 'Received', amount: 50.0, from: 'Bob', date: '2025-04-14' },
-  { id: '3', type: 'Sent', amount: -10.0, to: 'Charlie', date: '2025-04-13' },
-];
-
 const WalletView = () => {
   const { socket } = useSocket();
   const [modalVisible, setModalVisible] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [paying, setPaying] = useState(false)
-  const balance1 = 115.25;
+  const [paying, setPaying] = useState(false);
+
+  const { data: balance, isLoading: balanceLoading, isSuccess: balanceSuccess, refetch: refetchBalance } = useGetbalanceQuery({});
+  const { data, isLoading, isSuccess, error, refetch } = useGetlogsQuery({ page: 1, limit: paying ? 6 : 6 });
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (balanceSuccess && balance) {
+      dispatch(
+        setBalance({
+          amount: balance.amount,
+          updatedAt: balance.timestamp,  // adjust to your API shape
+        })
+      );
+    }
+  }, [balanceSuccess, balance, dispatch]);
+  useEffect(() => {
+    const handlePaymentStart = (data: any) => setPaying(data);
+    socket?.on("payment-start", handlePaymentStart);
+
+    return () => {
+      socket?.off("payment-start", handlePaymentStart); // Cleanup on unmount
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    const handlePaymentEnd = async (data: any) => {
+      await refetch();
+      await refetchBalance()
+
+      setPaying(false);
+    };
+    socket?.on("payment-end", handlePaymentEnd);
+
+    return () => {
+      socket?.off("payment-end", handlePaymentEnd); // Cleanup on unmount
+    };
+  }, [socket, refetch]);
+
+  useEffect(() => {
+    const handlePaymentUpdated: any = (data: any) => {
+      // Handle payment updated event
+    };
+    socket?.on("payment-updated", handlePaymentUpdated);
+
+    return () => {
+      socket?.off("payment-updated", handlePaymentUpdated); // Cleanup on unmount
+    };
+  }, [socket]);
+
   const handleWithdraw = () => {
-    console.log('Withdraw:', withdrawAmount);
+    console.log('Withdraw:', withdrawAmount); // You can remove this log in production
     setModalVisible(false);
     setWithdrawAmount('');
   };
-  const  balance  = useSelector((state: any) => {
-    console.log(state)
-  })
-  const { data, isLoading, isSuccess, error, refetch } = useGetlogsQuery({ page: 1, limit: paying ? 2 : 6 });
-  useEffect(() => {
-    socket?.on("payment-start", (data) => {
-      setPaying(data)
-    })
-  }, [])
-  useEffect(() => {
 
-    socket?.on("payment-end", (data) => {
-      refetch()
-      setPaying(data)
-    })
-  }, [])
   const renderItem = ({ item }: any) => (
     <View className="bg-gray-800 p-4 rounded-xl mb-3 flex-row justify-between shadow-sm">
-
       <Text className="text-gold-500 text-base">
         {item?.type === 'Sent' ? `Sent to ${item?.vendor}` : ` Ksh ${item?.amount}  ${item?.phone_number} `}
       </Text>
-      <Text
-        className={`text-base font-bold ${item?.ResponseCode !== 0 ? 'text-red-400' : 'text-green-400'
-          }`}
-      >
+      <Text className={`text-base font-bold ${item?.ResponseCode !== 0 ? 'text-red-400' : 'text-green-400'}`}>
         {FormatDate(item?.createdAt) || ''}
-        {/* Ksh {Math.abs(item?.amount).toFixed(2)} */}
       </Text>
     </View>
   );
+
   return (
-    <View className="flex-1 bg-black-50 px-5 pt-[80px]">
-
-      <Text className="text-4xl font-semibold text-blue-400 my-6">
-        Ksh {balance1.toFixed(2)}
-      </Text>
-
+    <View className="flex-1 bg-black-50 px-5 pt-14">
+      {balance !== undefined && balanceSuccess && !balanceLoading ? <Text className="text-4xl font-semibold text-blue-400 ">
+        Ksh {balance?.amount.toFixed(2)}
+      </Text> :
+        <View className="bg-gray-800 animate-pulse p-4 h-20 w-[100px] rounded-xl mb-3 flex-row justify-between items-center shadow-sm">
+        </View>
+      }
       <View className="flex-row space-x-3 mb-6">
-
         <TouchableOpacity
           className="flex-1 bg-gold-500 py-3 rounded-xl items-center"
           onPress={() => setModalVisible(true)}
@@ -88,11 +114,14 @@ const WalletView = () => {
       </View>
 
       <Text className="text-xl font-medium mb-3 text-white">Recent Transactions</Text>
-
+      {paying && <ActivityIndicator color="red" />}
       <FlatList
-        data={data === undefined ? [...Array(10)] : data?.logs}
-        keyExtractor={(item) => item?._id}
-        renderItem={data !== undefined && isSuccess ? renderItem : LoaderCard}
+        data={isLoading ? [...Array(10)] : data?.logs}
+        keyExtractor={(item, index) => isLoading ? index.toString() : item?._id}
+        renderItem={isLoading ? LoaderCard : renderItem}
+        refreshControl={
+          <RefreshControl refreshing={isLoading && isSuccess && data !== undefined} onRefresh={refetch} />
+        }
       />
 
       {/* Withdraw Modal */}
@@ -135,6 +164,7 @@ const WalletView = () => {
     </View>
   );
 };
+
 const LoaderCard = () => (
   <View className="bg-gray-800 animate-pulse p-4 rounded-xl mb-3 flex-row justify-between items-center shadow-sm">
     <View className="bg-gray-700 h-4 w-32 rounded-md animate-pulse" />

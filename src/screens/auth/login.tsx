@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCredentials } from "../../features/auth/authSlice";
 import { useAuth } from "../../../contexts/AuthContext";
 import { io, Socket } from 'socket.io-client'
+import { useAuthContext } from "../../../contexts/AuthContext1";
 
 const SOCKET_URL = `${process.env.SOCKET_SERVER_URL}`;
 export default function LoginScreen() {
@@ -45,7 +46,7 @@ export default function LoginScreen() {
     const [register, { isLoading: registrationLoading }] = useSignupMutation();
     const [activate, { isLoading: activationLoading }] = useActivateMutation();
     const dispatch = useDispatch()
-    const { login } = useAuth();
+    const { login } = useAuthContext();
     const handleChange = (key: keyof Item, value: string) => {
         setMsg({ msg: "", state: "" });
         setItem((prev: any) => ({
@@ -56,12 +57,12 @@ export default function LoginScreen() {
     const handleSubmit = async (e?: any) => {
         try {
             let fcmToken = await AsyncStorage.getItem('fcmToken');
-            
+
             setItem((prev: any) => ({
                 ...prev,
                 fcmToken: fcmToken
-            })) 
-        
+            }))
+
             setMsg({ msg: "", state: "" });
 
             if (!item.phone_number || !item.password) {
@@ -80,16 +81,13 @@ export default function LoginScreen() {
                     dispatch(setCredentials({ ...data }))
                     await AsyncStorage.setItem("accessToken", data.token);
                     if (data?.exp) {
-                        login(data.token);
                         await AsyncStorage.setItem("tokenExpiry", data.exp.toString());
+                        await login(data.token);
                     }
                 }
                 setMsg({ msg: `${islogin ? "Login successful! Redirecting..." : "Registration successful! Please verify your account."}`, state: "success" });
-                if (islogin) {
-
-                    navigation.navigate("home");
-
-                } else {
+                if (!islogin) {
+                    
                     setTimeout(() => {
                         setStep(2);
                         setIslogin(false);
@@ -113,6 +111,13 @@ export default function LoginScreen() {
 
         }
     };
+    const getToken = async () => {
+        let token = await AsyncStorage.getItem('fcmToken');
+        setItem((prev: any) => ({
+            ...prev,
+            fcmToken: token
+        }));
+    }
 
     const handleVerification = async (e: React.FormEvent) => {
 
@@ -145,11 +150,12 @@ export default function LoginScreen() {
 
         }
     };
-    // useEffect(() => {
-    //     if (user) {
-    //         navigation.replace("home")
-    //     }
-    // }, [])
+    useEffect(() => {
+        getToken()
+        // if (user) {
+        //     navigation.replace("home")
+        // }
+    }, [])
 
 
     return (

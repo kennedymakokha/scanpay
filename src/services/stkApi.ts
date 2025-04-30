@@ -13,11 +13,15 @@ export const injectEndpoints = api.injectEndpoints({
     getlogs: builder.query({
       query: (data) => ({ url: `/stk/mpesa-logs?limit=${data.limit}page=${data.page}` }),
     }),
+    getbalance: builder.query({
+      query: (data) => ({ url: `/stk/balance` }),
+    }),
 
   }),
 });
 
 export const {
   useGetlogsQuery,
-  usePayMutation
+  usePayMutation,
+  useGetbalanceQuery
 } = injectEndpoints;

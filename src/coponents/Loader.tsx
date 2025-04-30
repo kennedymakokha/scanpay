@@ -5,11 +5,11 @@ import { useSelector } from 'react-redux';
 
 
 const OverlayLoader = () => {
-  const { user } = useSelector((state: any) => state.auth)
+  // const { user } = useSelector((state: any) => state.auth)
   // console.log(user)
   return (
     <View
-      className={`absolute z-40 top-0 left-0 w-full h-full${user !== null ? "opacity-10 bg-black-50" : "bg-primary"} justify-center items-center z-50`}
+      className={`absolute z-40 top-0 left-0 w-full h-full  bg-black-50 justify-center items-center z-50`}
       style={{
         height: Dimensions.get('window').height,
         width: Dimensions.get('window').width,
