@@ -14,12 +14,6 @@ import { API_URL } from '@env';
 
 const QRScannerScreen: React.FC = () => {
 
-
-  // const { hasPermission } = useCameraPermission()
-  // const device = useCameraDevice("back")
-  const devices = Camera.getAvailableCameraDevices()
-  console.log(devices)
-  const device = devices.filter(d => d.position === 'back')[0] || null
   const [show, setShow] = useState(false);
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,10 +32,16 @@ const QRScannerScreen: React.FC = () => {
     try {
       setLoading(true);
       if (item.amount === "") {
-        setErrorMessage("Kindly enter amount")
+        setErrorMessage("enter amount")
         setLoading(false)
         return
       }
+      if (checked && item.phone_number === null) {
+        setErrorMessage("enter the phone Number")
+        setLoading(false)
+        return
+      }
+      
       const data = {
         phone_number: item.phone_number,
         amount: item.amount,
@@ -51,7 +51,6 @@ const QRScannerScreen: React.FC = () => {
         method: 'POST',
         body: JSON.stringify(data),
       });
-
       setLoading(false);
       setShow(false);
       setItem({ phone_number: null, amount: '', to: '' });
@@ -67,10 +66,8 @@ const QRScannerScreen: React.FC = () => {
     return match ? match[1] : null;
   }
   const codeScanner = useCodeScanner({
-
     codeTypes: ['qr', 'ean-13'],
     onCodeScanned: (codes) => {
-
       if (isScanning.current) return; // 👈 prevent re-trigger
       const url: any = codes?.[0]?.value;
       const domain = getDomain(`${url}`);
@@ -125,20 +122,44 @@ const QRScannerScreen: React.FC = () => {
   // if (hasPermission === false) {
   //   return <PermissionsPage />;
   // }
+  const [cam, setCam] = useState<any>("back")
+  const { hasPermission, requestPermission } = useCameraPermission()
+  const device = useCameraDevice(cam)
+  const camera = useRef<Camera>(null)
+  useEffect(() => {
+    (async () => {
+      let status = await Camera.getCameraPermissionStatus();
 
+      if (status !== 'granted') {
+        status = await Camera.requestCameraPermission();
+      }
+
+      if (status === 'denied') {
+        // show a prompt or navigate away
+        console.warn('Camera permission denied');
+      }
+    })();
+  }, []);
+
+  if (!hasPermission) return <View><Text>Not Permitted</Text></View>
+  if (device == null) return <View><Text>Not Device selected</Text></View>
+
+
+  if (!device) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>Loading camera...</Text>
+      </View>
+    );
+  }
   if (!device) {
     return <NoCameraDeviceError />;
   }
-
-
-
-
   return (
     <View className={`flex-1 relative items-center justify-center ${show ? 'bg-black-200' : 'bg-black-50'}`}>
       {loading && <OverlayLoader />}
       {codeError && errorMessage !== "" && <AlertContainer msg={errorMessage} state="error" />}
       <View className="w-1/2 self-center  ">
-      
       </View>
       <Camera
         style={{ width: 200, height: 200 }}
@@ -146,11 +167,10 @@ const QRScannerScreen: React.FC = () => {
         codeScanner={codeScanner}
         isActive={!loading}
       />
-
       {show && (
         <View className="absolute z-20 w-3/4 self-center bg-black-50 rounded-md p-4">
           <View className="flex-1 w-full py-10">
-            <AlertContainer msg={errorMessage} state="error" />
+           
             {checked && (
               <Input
                 label="Phone Number"

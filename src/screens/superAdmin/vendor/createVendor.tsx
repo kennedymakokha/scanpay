@@ -22,7 +22,7 @@ import { useGetbusinessQuery } from '../../../services/businessApi';
 import { requestLocationPermission } from '../../../utility/locationPermisionRequest';
 import { authorizedFetch } from '../../../utility/authorisedFetch';
 import { API_URL } from '@env';
-const AddProductScreen = () => {
+const AddVendor = () => {
     const initialitem = {
         confirm_password: "",
         vendorName: "",
@@ -116,7 +116,7 @@ const AddProductScreen = () => {
 
     return (
         <KeyboardAvoidingView
-            className="flex-1   bg-black-50  py-14"
+            className="flex-1   bg-black-50 "
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
@@ -200,4 +200,4 @@ const AddProductScreen = () => {
     );
 };
 
-export default AddProductScreen;
+export default AddVendor;

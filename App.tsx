@@ -8,20 +8,14 @@ import { Provider } from 'react-redux';
 import { persistor, store } from './store';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider, useTheme } from './contexts/themeContext';
-import { ToggleProvider } from './contexts/ToggleContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geolocation from '@react-native-community/geolocation';
-import { API_URL } from '@env';
-import { AuthProvider } from './contexts/AuthContext1';
 import { getMessaging, getToken, onMessage } from '@react-native-firebase/messaging';
-const baseUrl = `${API_URL}/api`;
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-;
 import { SocketProvider } from './contexts/SocketContext';
 import { getApp } from '@react-native-firebase/app';
 import { useTokenExpiryWatcher } from './src/hooks/useTokenExpiryWatcher';
 import { useAuthContext } from './contexts/AuthContext1';
-import { Text } from 'react-native';
 import { RootDrawer } from './src/navigation/rootDrawer';
 import OverlayLoader from './src/coponents/Loader';
 function App(): React.JSX.Element {
@@ -142,30 +136,30 @@ function App(): React.JSX.Element {
     return token ? <RootDrawer /> : <AuthStack />;
 
   };
- 
+
   useEffect(() => {
     setTimeout(() => {
       setLoading(false)
     }, 4000);
   }, [])
-  
+
 
   return (
     <View className="flex-1 dark bg-black-50">
       {loading && <OverlayLoader />}
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SocketProvider>
-          <ToggleProvider>
-            <ThemeProvider>
-              <Provider store={store}>
-                <PersistGate loading={null} persistor={persistor}>
-                  <UserProvider>
-                    <AppWithAuth />
-                  </UserProvider>
-                </PersistGate>
-              </Provider>
-            </ThemeProvider>
-          </ToggleProvider>
+
+          <ThemeProvider>
+            <Provider store={store}>
+              <PersistGate loading={null} persistor={persistor}>
+                <UserProvider>
+                  <AppWithAuth />
+                </UserProvider>
+              </PersistGate>
+            </Provider>
+          </ThemeProvider>
+
         </SocketProvider>
 
       </GestureHandlerRootView>

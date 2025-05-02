@@ -7,6 +7,7 @@ export type RootStackParamList = {
     Home: undefined
     businesses: undefined
     vendor: undefined
+    createVendor: undefined
 
     // Add other routes here
 };

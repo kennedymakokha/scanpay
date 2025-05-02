@@ -1,76 +1,61 @@
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import QRScannerScreen from '../screens/scan';
-import CustomDrawer from './customdrawer';
-import { AdminStack, ClientStack, SuperAdminStack } from './rootStack';
-import ProfileScreen from '../screens/profileScreen';
-import { TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import LoginScreen from '../screens/auth/login';
-import { useAuth } from '../../contexts/AuthContext';
 
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../types';
-import { useNavigation } from '@react-navigation/native';
-import { useSocket } from '../../contexts/SocketContext';
-import { useAuthContext } from '../../contexts/AuthContext1';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import { useNavigation } from "@react-navigation/native";
+import { useAuthContext } from "../../contexts/AuthContext1";
+import { useSocket } from "../../contexts/SocketContext";
+import { useSelector } from "react-redux";
+import { useEffect, useMemo } from "react";
+import LoginScreen from "../screens/auth/login";
+import { AdminStack, ClientStack, SalesStack, SuperAdminStack } from "./rootStack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../types";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { TouchableOpacity } from "react-native";
+import CustomDrawer from "./customdrawer";
+import ProfileScreen from "../screens/profileScreen";
+import QRScannerScreen from "../screens/scan";
+import HelpSupportScreen from '../screens/helpSupport';
+import CustomHeader from '../coponents/customHeader';
 
-const Drawer = createDrawerNavigator();
-const { socket } = useSocket();
+
 
 export function RootDrawer() {
-    const { token, logout } = useAuthContext();
-    const { socket } = useSocket();
-    type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-    const navigation = useNavigation<NavigationProp>();
-    const getMainStack = () => {
-        if (!token) return LoginScreen; // or null
+    const { token, logout } = useAuthContext(); // ✅ OK
+    const { socket } = useSocket();             // ✅ OK
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { user } = useSelector((state: any) => state.auth); // ✅ OK
+    const Drawer = createDrawerNavigator();
+    // ✅ Safely memoize stack component
+    const StackComponent = useMemo(() => {
+        if (!token) return LoginScreen;
         if (user?.role === 'client') return ClientStack;
         if (user?.role === 'superAdmin' || user?.role === 'sale') return SuperAdminStack;
         if (user?.role === 'admin') return AdminStack;
+        if (user?.role === 'sales') return SalesStack;
         return LoginScreen;
-    };
-    useEffect(() => {
-        getMainStack()
-    }, [token])
+    }, [token, user]);
 
     useEffect(() => {
         if (!user) {
-            navigation.replace("login")
+            navigation.replace("login");
         }
-    }, [token])
-
-    const { user } = useSelector((state: any) => state.auth)
+    }, [token]);
 
     useEffect(() => {
+        if (user?._id) {
+            socket?.emit('join_room', user._id);
+        }
+    }, [user]);
 
-        socket?.emit('join_room', user._id);
-
-    }, [])
     return (
         <Drawer.Navigator
             drawerContent={(props) => <CustomDrawer {...props} />}
-
             screenOptions={{
-                drawerLabelStyle: {
-                    color: 'Gold', // <-- change drawer text color
-                    fontSize: 16,
-                },
-                drawerActiveTintColor: 'white', // <-- active item text color
-                drawerInactiveTintColor: 'gray', // <-- inactive item text color
-                drawerActiveBackgroundColor: '#FF6600', // 
-                headerTransparent: true,
-                headerTitle: 'Home',
-                headerShadowVisible: false, // for iOS
-                headerTintColor: '#d4af37', // <-- changes hamburger (and back) icon color
-
-                headerStyle: {
-
-                    elevation: 0, // for Android
-                    shadowOpacity: 0, // also iOS
-                    backgroundColor: 'transparent', // important for both
-                },
+                headerShown: false,
+                drawerLabelStyle: { color: 'gold', fontSize: 16 },
+                drawerActiveTintColor: 'white',
+                drawerInactiveTintColor: 'gray',
+                drawerActiveBackgroundColor: '#FF6600',
                 drawerStyle: {
                     backgroundColor: '#1a1a1a',
                     width: 240,
@@ -78,33 +63,33 @@ export function RootDrawer() {
                 drawerType: 'front',
             }}
         >
-            <Drawer.Screen name="Home"
+            <Drawer.Screen
+                name="Home"
+                component={StackComponent}
                 options={({ navigation }) => ({
-                    title: "Dashboard",
-                    headerShown: false,
+                    title: "",
+                    // headerShown: false,
                     headerRight: () => (
-                        <>
-                            {user?.role === "client" &&
-                                <TouchableOpacity
-                                    onPress={() => navigation.navigate('Scan')}
-                                    style={{ marginRight: 12 }}
-                                >
-                                    <Icon name="data-matrix-scan" size={18} color="#ffaa1d" />
-                                </TouchableOpacity>
-                            }
-                        </>
+                        user?.role === "client" && (
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('Scan')}
+                                style={{ marginRight: 12 }}
+                            >
+                                <Icon name="data-matrix-scan" size={18} color="#ffaa1d" />
+                            </TouchableOpacity>
+                        )
                     ),
                 })}
-                component={getMainStack()}
             />
-
-            <Drawer.Screen name="Profile" component={ProfileScreen} />
-
-            <Drawer.Screen
-                options={({ navigation }) => ({
-                    title: "Scan To Pay",
-                })}
-                name="Scan" component={QRScannerScreen} />
+            <Drawer.Screen name="Profile" options={{
+                headerShown: false
+            }} component={ProfileScreen} />
+            <Drawer.Screen name="support"
+                options={{
+                    header: () => <CustomHeader title="Help & support" />,
+                }}
+                component={HelpSupportScreen} />
+            <Drawer.Screen name="Scan" component={QRScannerScreen} options={{ title: "Scan To Pay" }} />
         </Drawer.Navigator>
     );
 }

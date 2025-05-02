@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types';
 import { useNavigation } from '@react-navigation/native';
 import { useGetlogsQuery } from '../services/stkApi';
-import { FormatDate } from '../utility/formatDate';
+import { FormatDate, getDurationFromNow } from '../utility/formatDate';
 import { useSocket } from '../../contexts/SocketContext';
 
 const AdminDashboard = () => {
@@ -23,7 +23,7 @@ const AdminDashboard = () => {
 
   type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
   const navigation = useNavigation<NavigationProp>();
- 
+
   useEffect(() => {
     if (!user) {
       navigation.replace('login');
@@ -49,13 +49,18 @@ const AdminDashboard = () => {
     };
   }, [socket, refetch]);
 
+ 
   const renderItem = useCallback(({ item }: any) => (
     <View className="bg-gray-800 p-4 gap-y-2 rounded-lg mb-2">
-      <Text className="font-semibold text-white">
-        {`+254*******${item.phone_number.slice(-3)}`}
-      </Text>
+      <View className="flex items-center flex-row justify-between">
+        <Text className="font-semibold text-white">
+          {`+254*******${item.phone_number.slice(-3)}`}
+        </Text>
+        <Text className="text-white">{`Ksh ${item.amount.toFixed(2)} `}</Text>
+      </View>
+
       <View className="flex-row">
-        <Text className="text-white">{`Ksh ${item.amount} `}</Text>
+
         <Text
           className={`${item.ResponseCode === 0 ? 'text-green-400' : 'text-red-400'
             } max-w-[250px] text-wrap`}
@@ -63,12 +68,11 @@ const AdminDashboard = () => {
           {item.ResultDesc}
         </Text>
       </View>
-      <Text className="text-gray-400 text-sm">
-        {FormatDate(item.createdAt) || ''}
+      <Text className="text-gray-400 self-end text-end text-sm">
+        {getDurationFromNow(item.createdAt) || ''}
       </Text>
     </View>
   ), []);
-
   const keyExtractor = useCallback((item: any) => item._id, []);
 
   if (isLoading) {
@@ -78,9 +82,8 @@ const AdminDashboard = () => {
       </View>
     );
   }
-
   return (
-    <View className="flex-1 bg-black-50 px-4 pt-14">
+    <View className="flex-1 bg-black-50 px-4 ">
       {/* Statistics */}
       <View className="flex-row flex-wrap justify-between mb-6">
         <StatCard title="Total Payments" value="Ksh 10,500" color="bg-green-600" />
@@ -118,14 +121,12 @@ const AdminDashboard = () => {
     </View>
   );
 };
-
 const StatCard = ({ title, value, color }: { title: string; value: string; color: string }) => (
   <View className={`w-[48%] ${color} p-4 rounded-lg mb-4`}>
     <Text className="text-white text-sm">{title}</Text>
     <Text className="text-white text-xl font-bold">{value}</Text>
   </View>
 );
-
 const LoaderCard = () => (
   <View className="bg-gray-800 animate-pulse p-4 gap-y-3 rounded-lg mb-2 gap-y-1 space-y-2">
     <View className="h-4 w-32 rounded animate-pulse bg-gray-700" ></View>

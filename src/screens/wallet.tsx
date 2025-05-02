@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useGetbalanceQuery, useGetlogsQuery } from '../services/stkApi';
 import { useSocket } from '../../contexts/SocketContext';
-import { FormatDate } from '../utility/formatDate';
+import { FormatDate, getDurationFromNow } from '../utility/formatDate';
 import { useDispatch, useSelector } from 'react-redux';
 import { setBalance } from '../features/auth/balance/balanceSlice';
 
@@ -85,25 +85,41 @@ const WalletView = () => {
     setWithdrawAmount('');
   };
 
-  const renderItem = ({ item }: any) => (
-    <View className="bg-gray-800 p-4 rounded-xl mb-3 flex-row justify-between shadow-sm">
-      <Text className="text-gold-500 text-base">
-        {item?.type === 'Sent' ? `Sent to ${item?.vendor}` : ` Ksh ${item?.amount}  ${item?.phone_number} `}
-      </Text>
-      <Text className={`text-base font-bold ${item?.ResponseCode !== 0 ? 'text-red-400' : 'text-green-400'}`}>
-        {FormatDate(item?.createdAt) || ''}
+
+  const renderItem = useCallback(({ item }: any) => (
+    <View className="bg-gray-800 p-4 gap-y-2 rounded-lg mb-2">
+      <View className="flex items-center flex-row justify-between">
+        <Text className="font-semibold text-white">
+          {`+${item.phone_number}`}
+        </Text>
+        <Text className="text-white">{`Ksh ${item.amount.toFixed(2)} `}</Text>
+      </View>
+
+      <View className="flex-row">
+
+        <Text
+          className={`${item.ResponseCode === 0 ? 'text-green-400' : 'text-red-400'
+            } max-w-[250px] text-wrap`}
+        >
+          {item.ResultDesc}
+        </Text>
+      </View>
+      <Text className="text-gray-400 self-end text-end text-sm">
+        {getDurationFromNow(item.createdAt) || ''}
       </Text>
     </View>
-  );
+  ), []);
 
   return (
-    <View className="flex-1 bg-black-50 px-5 pt-14">
-      {balance !== undefined && balanceSuccess && !balanceLoading ? <Text className="text-4xl font-semibold text-blue-400 ">
+    <View className="flex-1 bg-black-50 px-5 ">
+      {balance !== undefined && balanceSuccess && !balanceLoading ? <Text className="text-4xl text-center mb-4 font-semibold text-blue-400 ">
         Ksh {balance?.amount.toFixed(2)}
       </Text> :
-        <View className="bg-gray-800 animate-pulse p-4 h-20 w-[100px] rounded-xl mb-3 flex-row justify-between items-center shadow-sm">
+        <View className="bg-gray-800 self-center animate-pulse p-1 h-20 w-[200px] rounded-xl mb-3 flex-row justify-between items-center shadow-sm">
+
         </View>
       }
+
       <View className="flex-row space-x-3 mb-6">
         <TouchableOpacity
           className="flex-1 bg-gold-500 py-3 rounded-xl items-center"
@@ -166,9 +182,13 @@ const WalletView = () => {
 };
 
 const LoaderCard = () => (
-  <View className="bg-gray-800 animate-pulse p-4 rounded-xl mb-3 flex-row justify-between items-center shadow-sm">
-    <View className="bg-gray-700 h-4 w-32 rounded-md animate-pulse" />
-    <View className="bg-gray-700 h-4 w-20 rounded-md animate-pulse" />
+  <View className="bg-gray-800 animate-pulse p-4 gap-y-3 rounded-lg mb-2 gap-y-1 space-y-2">
+    <View className="h-4 w-32 rounded animate-pulse bg-gray-700" ></View>
+    <View className="flex-row items-center animate-pulse gap-x-1 space-x-2">
+      <View className="h-4 w-20 rounded animate-pulse bg-gray-700" ></View>
+      <View className="h-4 w-14 rounded animate-pulse bg-red-400 even:bg-green-700" ></View>
+    </View>
+    <View className="h-3 w-24 rounded animate-pulse bg-gray-700" ></View>
   </View>
 );
 

@@ -13,7 +13,14 @@ import SuperAdminDashboard from "../screens/superAdmin";
 import Vendor from "../screens/superAdmin/vendor";
 import Business from "../screens/superAdmin/categories";
 import CreateVendor from "../screens/superAdmin/vendor/createVendor";
-import { useToggle } from "../../contexts/ToggleContext";
+import CustomHeader from "../coponents/customHeader";
+import UserManagement from "../screens/superAdmin/vendor";
+import { Text } from "react-native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "../../types";
+import AddVendor from "../screens/superAdmin/vendor/createVendor";
+import SalesDashboard from "../screens/sales";
+
 
 
 const Stack = createNativeStackNavigator();
@@ -51,14 +58,53 @@ export function ClientStack() {
 }
 export function AdminStack() {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="adminDashboard" component={AdminDashboard} />
-            <Stack.Screen name="Wallet" component={WalletView} />
+        <Stack.Navigator screenOptions={{
+
+
+        }}>
+            <Stack.Screen name="adminDashboard"
+                options={{
+                    header: () => <CustomHeader title="Home" />,
+                }}
+                component={AdminDashboard} />
+            <Stack.Screen
+                options={{
+                    header: () => <CustomHeader title="My wallet" />,
+                }}
+                name="Wallet" component={WalletView} />
+        </Stack.Navigator>
+    );
+}
+export function SalesStack() {
+
+    return (
+        <Stack.Navigator screenOptions={{
+
+
+        }}>
+            <Stack.Screen name="salesDashboard"
+                options={{
+                    header: () => <CustomHeader title="Sales Dashboard" add />,
+
+                }}
+                component={SalesDashboard} />
+            <Stack.Screen name="myvendors"
+                options={{
+                    header: () => <CustomHeader title="Sales Dashboard" add />,
+
+                }}
+                component={UserManagement} />
+            <Stack.Screen name="createVendor"
+                options={{
+                    header: () => <CustomHeader title="New Sign up" />,
+
+                }}
+                component={AddVendor} />
         </Stack.Navigator>
     );
 }
 export function SuperAdminStack() {
-    const { isEnabled, toggle } = useToggle();
+
     return (
         <Stack.Navigator screenOptions={{
             headerTransparent: true,

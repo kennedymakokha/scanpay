@@ -14,7 +14,7 @@ export default function UserManagement() {
   const [activeUsers, setActiveUsers] = useState(users);
 
   return (
-    <ScrollView className="flex-1 bg-white dark:bg-black-50 px-4 py-6">
+    <ScrollView className="flex-1 bg-white dark:bg-black-50 px-4 ">
       {/* Header */}
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-2xl font-bold text-gray-900 dark:text-white">Vendors</Text>
