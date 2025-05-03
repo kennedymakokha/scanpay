@@ -1,4 +1,4 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createNativeStackNavigator, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import QRScannerScreen from "../screens/scan";
 import LoginScreen from "../screens/auth/login";
 import Splash from "../screens/splash";
@@ -20,6 +20,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../types";
 import AddVendor from "../screens/superAdmin/vendor/createVendor";
 import SalesDashboard from "../screens/sales";
+import { useSelector } from "react-redux";
 
 
 
@@ -45,13 +46,26 @@ export function AuthStack() {
         </Stack.Navigator>
     );
 }
-
-
-
 export function ClientStack() {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { user } = useSelector((state: any) => state.auth); // ✅ 
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="UserDashboard" component={UserDashboard} />
+        <Stack.Navigator screenOptions={{ headerShown: true }}>
+            <Stack.Screen name="UserDashboard"
+                options={{
+                    headerLeft: () => <CustomHeader title="Cliant area" />,
+                    headerStyle:{backgroundColor:"black"},
+                    headerRight: () => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Scan')}
+                            style={{ marginRight: 12 }}
+                        >
+                            <Icon name="data-matrix-scan" size={18} color="#ffaa1d" />
+                        </TouchableOpacity>
+
+                    ),
+                }}
+                component={UserDashboard} />
             <Stack.Screen name="transactions" component={Transactions} />
         </Stack.Navigator>
     );

@@ -9,6 +9,8 @@ export type RootStackParamList = {
     vendor: undefined
     createVendor: undefined
 
+    Scan: undefined
+
     // Add other routes here
 };
 

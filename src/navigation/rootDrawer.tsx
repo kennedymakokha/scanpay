@@ -27,6 +27,7 @@ export function RootDrawer() {
     const Drawer = createDrawerNavigator();
     // ✅ Safely memoize stack component
     const StackComponent = useMemo(() => {
+
         if (!token) return LoginScreen;
         if (user?.role === 'client') return ClientStack;
         if (user?.role === 'superAdmin' || user?.role === 'sale') return SuperAdminStack;
@@ -46,7 +47,7 @@ export function RootDrawer() {
             socket?.emit('join_room', user._id);
         }
     }, [user]);
-
+    console.log(user.role)
     return (
         <Drawer.Navigator
             drawerContent={(props) => <CustomDrawer {...props} />}
@@ -67,18 +68,7 @@ export function RootDrawer() {
                 name="Home"
                 component={StackComponent}
                 options={({ navigation }) => ({
-                    title: "",
-                    // headerShown: false,
-                    headerRight: () => (
-                        user?.role === "client" && (
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('Scan')}
-                                style={{ marginRight: 12 }}
-                            >
-                                <Icon name="data-matrix-scan" size={18} color="#ffaa1d" />
-                            </TouchableOpacity>
-                        )
-                    ),
+                    title: "",    
                 })}
             />
             <Drawer.Screen name="Profile" options={{

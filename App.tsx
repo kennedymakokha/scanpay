@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PermissionsAndroid, Platform, View } from 'react-native';
+import { PermissionsAndroid, Platform, StatusBar, View } from 'react-native';
 import { AuthStack, RootStack } from './src/navigation/rootStack';
 import "./global.css"
 import './gesture-handler';
@@ -147,6 +147,11 @@ function App(): React.JSX.Element {
   return (
     <View className="flex-1 dark bg-black-50">
       {loading && <OverlayLoader />}
+      <StatusBar
+          animated={true}
+          backgroundColor="#000000"
+          
+        />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SocketProvider>
 

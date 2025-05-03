@@ -14,18 +14,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
   const { user } = useSelector((state: any) => state.auth)
   const { token, logout } = useAuthContext();
   const [data, setData] = useState<any>([
-    {
-      title: "My Transactions",
-      path: "transactions",
-      nested: true,
-      icon: "swap-horizontal-outline"
-    },
-    {
-      title: "My Scan-points",
-      path: "transactions",
-      nested: true,
-      icon: "data-matrix-scan"
-    }
+
   ])
   const { theme, toggleTheme } = useTheme();
   const dispatch = useDispatch()
@@ -64,6 +53,20 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
       icon: "briefcase-outline"
     },
   ]
+  const clientAdminroutes = [
+    {
+      title: "My Transactions",
+      path: "transactions",
+      nested: true,
+      icon: "swap-horizontal-outline"
+    },
+    {
+      title: "My Scan-points",
+      path: "transactions",
+      nested: true,
+      icon: "data-matrix-scan"
+    }
+  ]
 
   useEffect(() => {
     if (!token) {
@@ -73,7 +76,10 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = ({ navigation }) => 
       setData(Adminroutes)
     } else if (user?.role === "superAdmin") {
       setData(superAdminroutes)
-    } else {
+    } else if (user?.role === "client") {
+      setData(clientAdminroutes)
+    }
+    else {
       setData(salesAdminroutes)
     }
   }, [token])

@@ -33,8 +33,9 @@ export default function LoginScreen() {
     const [step, setStep] = useState(1);
 
     const [item, setItem] = useState<any>({
-        phone_number: "0712345678",
-        password: "+254712345678",
+        // 254712345678
+        phone_number: "0706203245",
+        password: "MikeMike",
         fcmToken: "",
         confirm_password: "",
         username: "Champion intel",
@@ -57,6 +58,7 @@ export default function LoginScreen() {
     const handleSubmit = async (e?: any) => {
         try {
             let fcmToken = await AsyncStorage.getItem('fcmToken');
+            console.log(fcmToken)
 
             setItem((prev: any) => ({
                 ...prev,
@@ -87,7 +89,7 @@ export default function LoginScreen() {
                 }
                 setMsg({ msg: `${islogin ? "Login successful! Redirecting..." : "Registration successful! Please verify your account."}`, state: "success" });
                 if (!islogin) {
-                    
+
                     setTimeout(() => {
                         setStep(2);
                         setIslogin(false);
